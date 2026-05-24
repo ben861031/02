@@ -526,7 +526,30 @@ reportTable.innerHTML += `
 
 <div class="card">
 
+
 <h2>🗂️ 審核紀錄</h2>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin:15px 0;align-items:center;">
+
+<input type="date" id="historyStartDate" style="width:auto;">
+
+<input type="date" id="historyEndDate" style="width:auto;">
+
+<select id="historyPageSize" onchange="changeHistoryPageSize()" style="padding:10px;border-radius:8px;">
+<option value="10">10筆/頁</option>
+<option value="20">20筆/頁</option>
+<option value="50">50筆/頁</option>
+<option value="99999">全部</option>
+</select>
+
+<button class="action-btn blue" onclick="filterReviewHistory()">
+查詢
+</button>
+
+</div>
+
+<div id="historyPagination" style="margin-top:15px;text-align:center;"></div>
+
 
 <table>
 
@@ -535,7 +558,7 @@ reportTable.innerHTML += `
 <th>簽核時間</th>
 <th>申請人</th>
 <th>簽核結果</th>
-<th>簽核人</th>
+<th>簽核人</th><th>內容</th>
 </tr>
 </thead>
 
@@ -656,6 +679,11 @@ let editMode = false;
 let cart = [];
 let requests = [];
 let reviewHistory = [];
+
+let historyCurrentPage = 1;
+let historyPageSize = 10;
+let filteredReviewHistory = [];
+
 
 const categories = {
 "筆類":["藍色原子筆","紅色原子筆","自動鉛筆","螢光筆","油性簽字筆"],
@@ -1156,7 +1184,8 @@ const reviewData = {
 datetime:new Date().toLocaleString(),
 applicant:req.applicant,
 result:"已核准",
-reviewer:currentUser
+reviewer:currentUser,
+items:[...req.items]
 };
 
 reviewHistory.unshift(reviewData);
@@ -1182,12 +1211,17 @@ async function reject(index){
 
 requests[index].status = "已退回";
 
-reviewHistory.unshift({
+const reviewData = {
 datetime:new Date().toLocaleString(),
 applicant:requests[index].applicant,
 result:"已退回",
-reviewer:currentUser
-});
+reviewer:currentUser,
+items:[...requests[index].items]
+};
+
+reviewHistory.unshift(reviewData);
+
+saveReviewHistory(reviewData);
 
 renderTables();
 if(typeof renderReportTable==='function'){renderReportTable();}
@@ -1309,20 +1343,7 @@ onclick="cancelRequest(${index})">
 
 });
 
-reviewHistory.forEach(r=>{
-
-history.innerHTML += `
-<tr>
-
-<td>${r.datetime}</td>
-<td>${r.applicant}</td>
-<td>${r.result}</td>
-<td>${r.reviewer}</td>
-
-</tr>
-`;
-});
-
+renderReviewHistoryTable();
 
 const historyTable = document.getElementById("reviewHistoryTable");
 
@@ -1338,9 +1359,31 @@ historyTable.innerHTML += `
 <td>${r.datetime}</td>
 <td>${r.applicant}</td>
 <td>${r.result}</td>
+
 <td>${r.reviewer}</td>
 
+<td>
+
+<button class="action-btn blue"
+onclick="toggleDetail('history_detail_${Math.random().toString(36).substr(2,9)}')">
+
+查看內容
+
+</button>
+
+<div class="details-box"
+id="history_detail_${Math.random().toString(36).substr(2,9)}">
+
+${(r.items || []).map(i=>
+`• ${i.item} x ${i.qty}<br>`
+).join("")}
+
+</div>
+
+</td>
+
 </tr>
+
 `;
 
 });
@@ -1382,6 +1425,164 @@ value="${index}">
 });
 
 }
+
+
+
+
+function changeHistoryPageSize(){
+
+historyPageSize = Number(
+document.getElementById("historyPageSize").value
+);
+
+historyCurrentPage = 1;
+
+renderReviewHistoryTable();
+
+}
+
+function filterReviewHistory(){
+
+const start = document.getElementById("historyStartDate").value;
+const end = document.getElementById("historyEndDate").value;
+
+filteredReviewHistory = reviewHistory.filter(r=>{
+
+if(!start && !end) return true;
+
+const d = new Date(r.datetime);
+
+if(start){
+
+const s = new Date(start);
+
+if(d < s) return false;
+
+}
+
+if(end){
+
+const e = new Date(end + " 23:59:59");
+
+if(d > e) return false;
+
+}
+
+return true;
+
+});
+
+historyCurrentPage = 1;
+
+renderReviewHistoryTable();
+
+}
+
+function renderReviewHistoryTable(){
+
+const historyTable = document.getElementById("reviewHistoryTable");
+
+if(!historyTable) return;
+
+historyTable.innerHTML = "";
+
+const data = filteredReviewHistory.length
+? filteredReviewHistory
+: reviewHistory;
+
+const startIndex = (historyCurrentPage - 1) * historyPageSize;
+
+const endIndex = startIndex + historyPageSize;
+
+const pageData = historyPageSize === 99999
+? data
+: data.slice(startIndex,endIndex);
+
+pageData.forEach(r=>{
+
+historyTable.innerHTML += `
+<tr>
+
+<td>${r.datetime}</td>
+<td>${r.applicant}</td>
+<td>${r.result}</td>
+
+<td>${r.reviewer}</td>
+
+<td>
+
+<button class="action-btn blue"
+onclick="toggleDetail('history_detail_${Math.random().toString(36).substr(2,9)}')">
+
+查看內容
+
+</button>
+
+<div class="details-box"
+id="history_detail_${Math.random().toString(36).substr(2,9)}">
+
+${(r.items || []).map(i=>
+`• ${i.item} x ${i.qty}<br>`
+).join("")}
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+renderHistoryPagination(data.length);
+
+}
+
+function renderHistoryPagination(total){
+
+const area = document.getElementById("historyPagination");
+
+if(!area) return;
+
+if(historyPageSize===99999){
+
+area.innerHTML = "";
+return;
+
+}
+
+const totalPages = Math.ceil(total / historyPageSize);
+
+let html = "";
+
+for(let i=1;i<=totalPages;i++){
+
+html += `
+<button
+class="action-btn ${i===historyCurrentPage?'blue':'gray'}"
+style="margin:3px;"
+onclick="goHistoryPage(${i})">
+
+${i}
+
+</button>
+`;
+
+}
+
+area.innerHTML = html;
+
+}
+
+function goHistoryPage(page){
+
+historyCurrentPage = page;
+
+renderReviewHistoryTable();
+
+}
+
 
 
 function renderStock(){
