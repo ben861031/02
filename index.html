@@ -1090,8 +1090,6 @@ wb,
 
 
 
-
-
 async function approve(index){
 
 try{
@@ -1102,6 +1100,7 @@ if(!req) return;
 
 req.status = "已核准";
 
+// Firebase 同步
 if(req.firebaseId && window.db){
 
 await window.fbUpdateDoc(
@@ -1113,6 +1112,7 @@ status:"已核准"
 
 }
 
+// 審核紀錄
 reviewHistory.unshift({
 datetime:new Date().toLocaleString(),
 applicant:req.applicant,
@@ -1131,47 +1131,22 @@ alert("核准失敗");
 
 }
 
+
 async function reject(index){
 
-try{
-
-const req = requests[index];
-
-if(!req) return;
-
-req.status = "已退回";
-
-if(req.firebaseId && window.db){
-
-await window.fbUpdateDoc(
-window.fbDoc(window.db,"requests",req.firebaseId),
-{
-status:"已退回"
-}
-);
-
-}
+requests[index].status = "已退回";
 
 reviewHistory.unshift({
 datetime:new Date().toLocaleString(),
-applicant:req.applicant,
+applicant:requests[index].applicant,
 result:"已退回",
 reviewer:currentUser
 });
 
 renderTables();
-
-}catch(e){
-
-console.error(e);
-alert("退回失敗");
-
-}
-
 }
 
 function renderTables(){
-
 
 const review = document.getElementById("reviewTable");
 const record = document.getElementById("recordTable");
