@@ -993,9 +993,12 @@ return;
 
 const total = cart.reduce((sum,i)=>sum+i.subtotal,0);
 
+// 先保留購物車資料
+const requestItems = [...cart];
+
 requests.unshift({
 applicant:currentUser,
-items:[...cart],
+items:requestItems,
 total,
 status:"待審核",
 datetime:new Date().toLocaleString()
@@ -1014,7 +1017,7 @@ if(window.db){
 
 const newRequest = {
 applicant:currentUser,
-items:[...cart],
+items:requestItems,
 total,
 status:"待審核",
 datetime:new Date().toLocaleString()
