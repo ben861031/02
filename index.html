@@ -973,6 +973,7 @@ cart=[];
 
 renderCart();
 renderTables();
+renderReportTable();
 
 try{
 
@@ -1029,6 +1030,7 @@ return;
 requests[index].status = "已作廢";
 
 renderTables();
+renderReportTable();
 }
 
 
@@ -1125,6 +1127,7 @@ reviewHistory.unshift(reviewData);
 await saveReviewHistory(reviewData);
 
 renderTables();
+renderReportTable();
 
 }catch(e){
 
@@ -1148,6 +1151,7 @@ reviewer:currentUser
 });
 
 renderTables();
+renderReportTable();
 }
 
 function renderTables(){
@@ -1623,6 +1627,7 @@ firebaseId:docSnap.id,
 });
 
 renderTables();
+renderReportTable();
 
 }catch(e){
 
@@ -1700,6 +1705,7 @@ if(typeof renderCategories === "function") renderCategories();
 if(typeof renderProducts === "function") renderProducts();
 if(typeof renderStock === "function") renderStock();
 if(typeof renderTables === "function") renderTables();
+renderReportTable();
 
 if(typeof loadCloudRequests === "function"){
 loadCloudRequests();
@@ -1844,6 +1850,7 @@ reviewHistory.push(docSnap.data());
 });
 
 renderTables();
+renderReportTable();
 
 }catch(e){
 
