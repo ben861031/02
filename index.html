@@ -1365,14 +1365,14 @@ historyTable.innerHTML += `
 <td>
 
 <button class="action-btn blue"
-onclick="toggleDetail('history_detail_${Math.random().toString(36).substr(2,9)}')">
+onclick="toggleDetail('history_detail_${index}')">
 
 查看內容
 
 </button>
 
 <div class="details-box"
-id="history_detail_${Math.random().toString(36).substr(2,9)}">
+id="history_detail_${index}">
 
 ${(r.items || []).map(i=>
 `• ${i.item} x ${i.qty}<br>`
@@ -1498,7 +1498,7 @@ const pageData = historyPageSize === 99999
 ? data
 : data.slice(startIndex,endIndex);
 
-pageData.forEach(r=>{
+pageData.forEach((r,index)=>{
 
 historyTable.innerHTML += `
 <tr>
@@ -1512,14 +1512,14 @@ historyTable.innerHTML += `
 <td>
 
 <button class="action-btn blue"
-onclick="toggleDetail('history_detail_${Math.random().toString(36).substr(2,9)}')">
+onclick="toggleDetail('history_detail_${index}')">
 
 查看內容
 
 </button>
 
 <div class="details-box"
-id="history_detail_${Math.random().toString(36).substr(2,9)}">
+id="history_detail_${index}">
 
 ${(r.items || []).map(i=>
 `• ${i.item} x ${i.qty}<br>`
