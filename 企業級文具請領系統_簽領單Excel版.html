@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>企業級文具請領系統_最終權限完整版</title>
+
+<style>
+*{box-sizing:border-box;font-family:"Microsoft JhengHei",sans-serif}
+body{margin:0;background:#f3f6fb}
+.hidden{display:none !important}
+
+.login-page{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.login-card{
+width:380px;
+background:white;
+padding:35px;
+border-radius:20px;
+box-shadow:0 4px 20px rgba(0,0,0,.15);
+}
+
+.login-card input{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:10px;
+}
+
+.login-btn{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#2563eb;
+color:white;
+cursor:pointer;
+font-size:16px;
+}
+
+.system{display:none}
+
+.sidebar{
+width:70px;
+position:fixed;
+left:0;
+top:0;
+height:100vh;
+background:#1e3c72;
+overflow:hidden;
+transition:.3s;
+padding:20px 10px;
+z-index:1000;
+}
+
+.sidebar:hover{
+width:240px;
+padding:20px;
+}
+
+.logo-text,.menu-text{
+opacity:0;
+transition:.2s;
+white-space:nowrap;
+}
+
+.sidebar:hover .logo-text,
+.sidebar:hover .menu-text{
+opacity:1;
+}
+
+.menu button{
+width:100%;
+margin-bottom:10px;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#3558a8;
+color:white;
+cursor:pointer;
+display:flex;
+align-items:center;
+gap:12px;
+overflow:hidden;
+}
+
+.icon{
+min-width:25px;
+text-align:center;
+}
+
+.main{
+margin-left:70px;
+padding:20px;
+transition:.3s;
+}
+
+.sidebar:hover ~ .main{
+margin-left:240px;
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.card,.category-panel,.product-card,.cart-panel{
+background:white;
+border-radius:18px;
+padding:18px;
+box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+.layout{
+display:grid;
+grid-template-columns:220px 1fr;
+gap:20px;
+}
+
+.category-btn{
+width:100%;
+margin-bottom:10px;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#3558a8;
+color:white;
+cursor:pointer;
+}
+
+.category-btn.active{
+background:#5f7fda;
+}
+
+.product-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+gap:20px;
+}
+
+.product-card img{
+width:100%;
+height:170px;
+object-fit:contain;
+background:white;
+border-radius:10px;
+}
+
+.price{
+font-size:22px;
+font-weight:bold;
+color:#dc2626;
+margin:10px 0;
+}
+
+input{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+
+th{
+background:#2a5298;
+color:white;
+padding:10px;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #eee;
+text-align:center;
+}
+
+.action-btn{
+border:none;
+padding:10px 12px;
+border-radius:8px;
+cursor:pointer;
+color:white;
+}
+
+.blue{background:#2563eb}
+.green{background:#16a34a}
+.red{background:#dc2626}
+.orange{background:#f59e0b}
+.gray{background:#6b7280}
+
+.page{display:none}
+.page.active{display:block}
+
+.cart-btn-top{
+position:relative;
+background:#2563eb;
+color:white;
+border:none;
+padding:12px 18px;
+border-radius:12px;
+cursor:pointer;
+}
+
+.cart-badge{
+position:absolute;
+top:-8px;
+right:-8px;
+background:red;
+width:22px;
+height:22px;
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:12px;
+}
+
+.overlay{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.4);
+z-index:2000;
+}
+
+.overlay.show{display:block}
+
+.cart-panel{
+position:fixed;
+top:0;
+right:-420px;
+width:400px;
+height:100vh;
+overflow:auto;
+transition:.3s;
+z-index:3000;
+}
+
+.cart-panel.show{right:0}
+
+.hidden-row{opacity:.45}
+.disabled-input{background:#f1f1f1}
+
+.details-box{
+display:none;
+background:#f8fafc;
+padding:10px;
+border-radius:10px;
+margin-top:8px;
+line-height:1.8;
+}
+
+.admin-only{
+display:none;
+}
+
+
+.print-btn{
+background:#7c3aed;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+margin-top:5px;
+}
+
+#printArea{
+display:none;
+}
+
+@media print{
+body *{
+visibility:hidden;
+}
+
+#printArea, #printArea *{
+visibility:visible;
+}
+
+#printArea{
+position:absolute;
+left:0;
+top:0;
+width:100%;
+font-family:"DFKai-SB","標楷體";
+}
+}
+
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="login-page" id="loginPage">
+
+<div class="login-card">
+
+<h1>📦 文具請領登入</h1>
+
+<input type="text" id="loginName" placeholder="姓名">
+
+<input type="text" id="loginDept" placeholder="部門">
+
+<button class="login-btn" onclick="login()">
+登入系統
+</button>
+
+</div>
+
+</div>
+
+<div class="system" id="system">
+
+<div class="sidebar">
+
+<div style="font-size:24px;color:white;margin-bottom:25px;">
+<span class="icon">📦</span>
+<span class="logo-text">文具系統</span>
+</div>
+
+<div class="menu">
+
+<button onclick="showPage('apply')">
+<span class="icon">📝</span>
+<span class="menu-text">文具申請</span>
+</button>
+
+<button onclick="showPage('record')">
+<span class="icon">📋</span>
+<span class="menu-text">我的請領紀錄</span>
+</button>
+
+<button class="admin-only hidden" onclick="showPage('stock')">
+<span class="icon">📦</span>
+<span class="menu-text">庫存管理</span>
+</button>
+
+<button class="admin-only hidden" onclick="showPage('review')">
+<span class="icon">✅</span>
+<span class="menu-text">審核作業</span>
+</button>
+
+<button class="admin-only hidden" onclick="showPage('reviewHistory')">
+<span class="icon">🗂️</span>
+<span class="menu-text">審核紀錄</span>
+</button>
+
+</div>
+
+</div>
+
+<div class="main">
+
+<div class="topbar">
+
+<div>
+👤 <span id="showUser"></span>
+</div>
+
+<div style="display:flex;gap:10px;align-items:center;">
+
+<button class="action-btn red" onclick="logout()">
+登出
+</button>
+
+<button class="cart-btn-top" onclick="toggleCart()">
+🛒
+<div class="cart-badge" id="cartBadge">0</div>
+</button>
+
+</div>
+
+</div>
+
+<!-- apply -->
+<div class="page active" id="apply">
+
+<div class="layout">
+
+<div class="category-panel">
+
+<h3>📂 文具分類</h3>
+<br>
+
+<div id="categoryArea"></div>
+
+</div>
+
+<div>
+
+<div class="product-grid" id="productArea"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- stock -->
+<div class="page" id="stock">
+
+<div class="card">
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+
+<h2>📦 庫存管理</h2>
+
+<button class="action-btn orange" id="editBtn" onclick="toggleEditMode()">
+開啟編輯
+</button>
+
+</div>
+
+<table>
+
+<thead>
+<tr>
+<th>分類</th>
+<th>品項</th>
+<th>價格</th>
+<th>圖片</th>
+<th>庫存</th>
+<th>安全庫存</th>
+<th>狀態</th>
+<th>操作</th>
+</tr>
+</thead>
+
+<tbody id="stockTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- review -->
+<div class="page" id="review">
+
+<div class="card">
+
+<h2>✅ 審核作業</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>時間</th>
+<th>申請人</th>
+<th>內容</th>
+<th>金額</th>
+<th>狀態</th>
+<th>操作</th>
+</tr>
+</thead>
+
+<tbody id="reviewTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- review history -->
+<div class="page" id="reviewHistory">
+
+<div class="card">
+
+<h2>🗂️ 審核紀錄</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>簽核時間</th>
+<th>申請人</th>
+<th>簽核結果</th>
+<th>簽核人</th>
+</tr>
+</thead>
+
+<tbody id="reviewHistoryTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- record -->
+<div class="page" id="record">
+
+<div class="card">
+
+<h2>📋 我的請領紀錄</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>時間</th>
+<th>申請人</th>
+<th>金額</th>
+<th>狀態</th>
+<th>內容</th>
+<th>操作</th>
+</tr>
+</thead>
+
+<tbody id="recordTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- cart -->
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+
+<div class="cart-panel" id="cartPanel">
+
+<h2>🛒 購物車</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>品項</th>
+<th>數量</th>
+<th>小計</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="cartTable"></tbody>
+
+</table>
+
+<h2 style="text-align:right">
+NT$ <span id="cartTotal">0</span>
+</h2>
+
+<button class="action-btn green" style="width:100%;margin-top:15px;" onclick="submitCart()">
+送出申請
+</button>
+
+</div>
+
+<script>
+
+let isAdmin = false;
+let currentUser = "";
+let currentCategory = "全部";
+let editMode = false;
+let cart = [];
+let requests = [];
+let reviewHistory = [];
+
+const categories = {
+"筆類":["藍色原子筆","紅色原子筆","自動鉛筆","螢光筆","油性簽字筆"],
+"便條紙類":["黃色便利貼","彩色便利貼","索引標籤","便條紙本","透明標籤貼"],
+"紙張類":["A4影印紙","A3影印紙","牛皮紙","色紙","標籤貼紙"],
+"資料夾類":["L夾","資料簿","風琴夾","公文夾","透明文件袋"],
+"辦公用品類":["剪刀","膠帶台","訂書機","迴紋針","美工刀"]
+};
+
+let stockItems = [];
+
+Object.entries(categories).forEach(([cat,items])=>{
+
+items.forEach(item=>{
+
+stockItems.push({
+name:item,
+category:cat,
+price:Math.floor(Math.random()*250)+20,
+qty:Math.floor(Math.random()*120)+20,
+safe:10,
+hidden:false,
+image:"https://images.unsplash.com/photo-1586282391129-76a6df230234?q=80&w=800&auto=format&fit=crop"
+});
+
+});
+
+});
+
+function login(){
+
+const name = document.getElementById("loginName").value;
+const dept = document.getElementById("loginDept").value;
+
+if(!name || !dept){
+alert("請輸入姓名與部門");
+return;
+}
+
+currentUser = dept + " / " + name;
+
+if(name === "蔡雨鑫" && dept === "行政部"){
+
+isAdmin = true;
+
+document.querySelectorAll(".admin-only").forEach(el=>{
+el.style.display = "flex";
+el.classList.remove("hidden");
+});
+
+}else{
+
+isAdmin = false;
+}
+
+document.getElementById("showUser").innerText = currentUser;
+
+document.getElementById("loginPage").style.display = "none";
+document.getElementById("system").style.display = "block";
+
+renderTables();
+}
+
+function logout(){
+
+location.reload();
+}
+
+function showPage(id){
+
+if(!isAdmin && ["stock","review","reviewHistory"].includes(id)){
+alert("您沒有權限");
+return;
+}
+
+document.querySelectorAll(".page").forEach(p=>{
+p.classList.remove("active");
+});
+
+document.getElementById(id).classList.add("active");
+}
+
+function renderCategories(){
+
+const area = document.getElementById("categoryArea");
+
+area.innerHTML = "";
+
+const cats = ["全部",...new Set(stockItems.map(i=>i.category))];
+
+cats.forEach(cat=>{
+
+area.innerHTML += `
+<button
+class="category-btn ${currentCategory===cat?'active':''}"
+onclick="filterCategory('${cat}')">
+
+${cat}
+
+</button>
+`;
+});
+}
+
+function filterCategory(cat){
+
+currentCategory = cat;
+
+renderCategories();
+renderProducts();
+}
+
+function renderProducts(){
+
+const area = document.getElementById("productArea");
+
+area.innerHTML = "";
+
+let filtered = stockItems.filter(i=>!i.hidden);
+
+if(currentCategory !== "全部"){
+filtered = filtered.filter(i=>i.category===currentCategory);
+}
+
+filtered.forEach(item=>{
+
+const index = stockItems.indexOf(item);
+
+area.innerHTML += `
+<div class="product-card">
+
+<img src="${item.image}">
+
+<h3>${item.name}</h3>
+
+<p>📂 ${item.category}</p>
+
+<div class="price">
+NT$ ${item.price}
+</div>
+
+<p>庫存：${item.qty}</p>
+
+<input type="number"
+id="qty_${index}"
+value="1"
+min="1">
+
+<br><br>
+
+<button class="action-btn blue"
+style="width:100%;"
+onclick="addToCart(${index})">
+
+加入購物車
+
+</button>
+
+</div>
+`;
+});
+}
+
+function addToCart(index){
+
+const qty = Number(document.getElementById(`qty_${index}`).value);
+
+if(stockItems[index].qty < qty){
+alert("庫存不足");
+return;
+}
+
+cart.push({
+item:stockItems[index].name,
+price:stockItems[index].price,
+qty,
+subtotal:stockItems[index].price * qty
+});
+
+renderCart();
+}
+
+function renderCart(){
+
+const table = document.getElementById("cartTable");
+
+table.innerHTML = "";
+
+let total = 0;
+
+cart.forEach((c,index)=>{
+
+total += c.subtotal;
+
+table.innerHTML += `
+<tr>
+
+<td>${c.item}</td>
+<td>${c.qty}</td>
+<td>NT$ ${c.subtotal}</td>
+
+<td>
+
+<button class="action-btn red"
+onclick="removeCart(${index})">
+
+X
+
+</button>
+
+</td>
+
+</tr>
+`;
+});
+
+document.getElementById("cartTotal").innerText = total;
+document.getElementById("cartBadge").innerText = cart.length;
+}
+
+function removeCart(index){
+
+cart.splice(index,1);
+
+renderCart();
+}
+
+function toggleCart(){
+
+document.getElementById("overlay").classList.toggle("show");
+document.getElementById("cartPanel").classList.toggle("show");
+}
+
+function submitCart(){
+
+if(cart.length===0){
+alert("購物車沒有商品");
+return;
+}
+
+const total = cart.reduce((sum,i)=>sum+i.subtotal,0);
+
+requests.unshift({
+applicant:currentUser,
+items:[...cart],
+total,
+status:"待審核",
+datetime:new Date().toLocaleString()
+});
+
+cart=[];
+
+renderCart();
+renderTables();
+
+alert("送出成功");
+
+toggleCart();
+}
+
+function toggleDetail(id){
+
+const el = document.getElementById(id);
+
+el.style.display =
+el.style.display === "block"
+? "none"
+: "block";
+}
+
+function cancelRequest(index){
+
+if(requests[index].status !== "待審核"){
+alert("已核准或已退回，無法抽單");
+return;
+}
+
+requests[index].status = "已作廢";
+
+renderTables();
+}
+
+
+
+function printReceipt(index){
+
+const r = requests[index];
+
+if(!r || !r.items){
+
+alert("找不到簽領單資料");
+return;
+}
+
+const wsData = [];
+
+wsData.push(["文具簽領單"]);
+wsData.push([]);
+wsData.push(["申請人", r.applicant]);
+wsData.push(["申請日期", r.datetime]);
+wsData.push([]);
+
+wsData.push(["品項","數量","金額"]);
+
+r.items.forEach(i=>{
+
+wsData.push([
+i.item,
+i.qty,
+i.subtotal
+]);
+
+});
+
+wsData.push([]);
+wsData.push(["總金額", "", r.total]);
+wsData.push([]);
+wsData.push(["申請人簽名："]);
+wsData.push([]);
+wsData.push(["管理者簽名："]);
+
+const wb = XLSX.utils.book_new();
+
+const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+ws["!cols"] = [
+{wch:30},
+{wch:15},
+{wch:15}
+];
+
+XLSX.utils.book_append_sheet(wb, ws, "簽領單");
+
+XLSX.writeFile(
+wb,
+`文具簽領單_${r.applicant.replace(/\//g,'_')}.xlsx`
+);
+}
+
+
+function approve(index){
+
+requests[index].status = "已核准";
+
+reviewHistory.unshift({
+datetime:new Date().toLocaleString(),
+applicant:requests[index].applicant,
+result:"已核准",
+reviewer:currentUser
+});
+
+renderTables();
+}
+
+function reject(index){
+
+requests[index].status = "退回";
+
+reviewHistory.unshift({
+datetime:new Date().toLocaleString(),
+applicant:requests[index].applicant,
+result:"已退回",
+reviewer:currentUser
+});
+
+renderTables();
+}
+
+function renderTables(){
+
+const review = document.getElementById("reviewTable");
+const record = document.getElementById("recordTable");
+const history = document.getElementById("reviewHistoryTable");
+
+review.innerHTML = "";
+record.innerHTML = "";
+history.innerHTML = "";
+
+requests.forEach((r,index)=>{
+
+const items = r.items.map(i=>
+`• ${i.item} x ${i.qty}<br>`
+).join("");
+
+if(isAdmin){
+
+review.innerHTML += `
+<tr>
+
+<td>${r.datetime}</td>
+
+<td>${r.applicant}</td>
+
+<td style="text-align:left;">
+${items}
+</td>
+
+<td>NT$ ${r.total}</td>
+
+<td>${r.status}</td>
+
+<td>
+
+<button class="action-btn green"
+onclick="approve(${index})">
+
+核准
+
+</button>
+
+<button class="action-btn red"
+onclick="reject(${index})">
+
+退回
+
+</button>
+
+<br><br>
+
+${r.status==="已核准" ? `
+<button class="print-btn"
+onclick="printReceipt(${index})">
+
+下載簽領單Excel
+
+</button>
+` : ''}
+
+</td>
+
+</tr>
+`;
+}
+
+if(r.applicant === currentUser){
+
+record.innerHTML += `
+<tr>
+
+<td>${r.datetime}</td>
+
+<td>${r.applicant}</td>
+
+<td>NT$ ${r.total}</td>
+
+<td>${r.status}</td>
+
+<td>
+
+<button class="action-btn blue"
+onclick="toggleDetail('detail_${index}')">
+
+查看內容
+
+</button>
+
+<div class="details-box" id="detail_${index}">
+
+${items}
+
+</div>
+
+</td>
+
+<td>
+
+${r.status==="待審核" ? `
+<button class="action-btn red"
+onclick="cancelRequest(${index})">
+
+抽單作廢
+
+</button>
+` : '-'}
+
+</td>
+
+</tr>
+`;
+}
+
+});
+
+reviewHistory.forEach(r=>{
+
+history.innerHTML += `
+<tr>
+
+<td>${r.datetime}</td>
+<td>${r.applicant}</td>
+<td>${r.result}</td>
+<td>${r.reviewer}</td>
+
+</tr>
+`;
+});
+}
+
+function renderStock(){
+
+const table = document.getElementById("stockTable");
+
+table.innerHTML = "";
+
+stockItems.forEach((item,index)=>{
+
+const status = item.qty <= item.safe
+? "⚠️不足"
+: "正常";
+
+table.innerHTML += `
+<tr class="${item.hidden ? 'hidden-row':''}">
+
+<td>
+<input type="text"
+value="${item.category}"
+${editMode?'':'disabled'}
+class="${editMode?'':'disabled-input'}"
+onchange="updateCategory(${index},this.value)">
+</td>
+
+<td>
+<input type="text"
+value="${item.name}"
+${editMode?'':'disabled'}
+class="${editMode?'':'disabled-input'}"
+onchange="updateName(${index},this.value)">
+</td>
+
+<td>
+<input type="number"
+value="${item.price}"
+${editMode?'':'disabled'}
+class="${editMode?'':'disabled-input'}"
+onchange="updatePrice(${index},this.value)">
+</td>
+
+<td>
+
+<img src="${item.image}"
+style="width:80px;height:80px;object-fit:contain;border-radius:10px;">
+
+<br><br>
+
+<input type="file"
+accept="image/*"
+onchange="uploadImage(${index},event)">
+
+</td>
+
+<td>
+<input type="number"
+value="${item.qty}"
+${editMode?'':'disabled'}
+class="${editMode?'':'disabled-input'}"
+onchange="updateQty(${index},this.value)">
+</td>
+
+<td>
+<input type="number"
+value="${item.safe}"
+${editMode?'':'disabled'}
+class="${editMode?'':'disabled-input'}"
+onchange="updateSafe(${index},this.value)">
+</td>
+
+<td>${status}</td>
+
+<td>
+
+<button class="action-btn blue"
+onclick="addInventory(${index})">
+
+進貨
+
+</button>
+
+<br><br>
+
+<button class="action-btn gray"
+onclick="toggleHidden(${index})">
+
+${item.hidden ? '恢復':'隱藏'}
+
+</button>
+
+</td>
+
+</tr>
+`;
+});
+}
+
+function toggleEditMode(){
+
+editMode = !editMode;
+
+document.getElementById("editBtn").innerText =
+editMode ? "關閉編輯" : "開啟編輯";
+
+renderStock();
+}
+
+function updateCategory(index,val){
+stockItems[index].category = val;
+renderCategories();
+renderProducts();
+}
+
+function updateName(index,val){
+stockItems[index].name = val;
+renderProducts();
+}
+
+function updatePrice(index,val){
+stockItems[index].price = Number(val);
+renderProducts();
+}
+
+function updateQty(index,val){
+stockItems[index].qty = Number(val);
+renderProducts();
+renderStock();
+}
+
+function updateSafe(index,val){
+stockItems[index].safe = Number(val);
+renderStock();
+}
+
+function uploadImage(index,event){
+
+const file = event.target.files[0];
+
+if(!file) return;
+
+const reader = new FileReader();
+
+reader.onload = function(e){
+
+stockItems[index].image = e.target.result;
+
+renderProducts();
+renderStock();
+};
+
+reader.readAsDataURL(file);
+}
+
+function addInventory(index){
+
+const qty = prompt("請輸入進貨數量");
+
+if(qty){
+
+stockItems[index].qty += Number(qty);
+
+renderProducts();
+renderStock();
+}
+}
+
+function toggleHidden(index){
+
+stockItems[index].hidden = !stockItems[index].hidden;
+
+renderProducts();
+renderStock();
+}
+
+renderCategories();
+renderProducts();
+renderCart();
+renderStock();
+
+</script>
+
+
+<div id="printArea"></div>
+
+</body>
+</html>
