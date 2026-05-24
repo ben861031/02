@@ -302,7 +302,36 @@ font-family:"DFKai-SB","標楷體";
 
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js">
+function renderReportTable(){
+
+const reportTable = document.getElementById("reportTable");
+
+if(!reportTable) return;
+
+reportTable.innerHTML = "";
+
+requests.forEach((r,index)=>{
+
+if(r.status==="已核准"){
+
+reportTable.innerHTML += `
+<tr>
+<td><input type="checkbox" class="report-check" value="${index}"></td>
+<td>${r.datetime}</td>
+<td>${r.applicant}</td>
+<td>NT$ ${r.total}</td>
+<td>${r.status}</td>
+</tr>
+`;
+
+}
+
+});
+
+}
+
+</script>
 
 </head>
 
@@ -973,6 +1002,7 @@ cart=[];
 
 renderCart();
 renderTables();
+if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 
 try{
@@ -1030,6 +1060,7 @@ return;
 requests[index].status = "已作廢";
 
 renderTables();
+if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 }
 
@@ -1127,6 +1158,8 @@ reviewHistory.unshift(reviewData);
 await saveReviewHistory(reviewData);
 
 renderTables();
+if(typeof renderReportTable==='function'){renderReportTable();}
+if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 
 }catch(e){
@@ -1151,6 +1184,7 @@ reviewer:currentUser
 });
 
 renderTables();
+if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 }
 
@@ -1627,6 +1661,7 @@ firebaseId:docSnap.id,
 });
 
 renderTables();
+if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 
 }catch(e){
@@ -1705,6 +1740,7 @@ if(typeof renderCategories === "function") renderCategories();
 if(typeof renderProducts === "function") renderProducts();
 if(typeof renderStock === "function") renderStock();
 if(typeof renderTables === "function") renderTables();
+if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 
 if(typeof loadCloudRequests === "function"){
@@ -1850,6 +1886,7 @@ reviewHistory.push(docSnap.data());
 });
 
 renderTables();
+if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 
 }catch(e){
