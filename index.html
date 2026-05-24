@@ -636,6 +636,8 @@ document.getElementById("loginPage").style.display = "none";
 document.getElementById("system").style.display = "block";
 
 renderTables();
+
+setTimeout(loadCloudRequests,1200);
 }
 
 function logout(){
@@ -808,7 +810,7 @@ document.getElementById("overlay").classList.toggle("show");
 document.getElementById("cartPanel").classList.toggle("show");
 }
 
-function submitCart(){
+async function submitCart(){
 
 if(cart.length===0){
 alert("購物車沒有商品");
@@ -817,18 +819,24 @@ return;
 
 const total = cart.reduce((sum,i)=>sum+i.subtotal,0);
 
-requests.unshift({
+const newRequest = {
 applicant:currentUser,
 items:[...cart],
 total,
 status:"待審核",
 datetime:new Date().toLocaleString()
-});
+};
+
+requests.unshift(newRequest);
+
+saveRequestCloud(newRequest);
 
 cart=[];
 
 renderCart();
 renderTables();
+
+setTimeout(loadCloudRequests,1200);
 
 alert("送出成功");
 
@@ -855,6 +863,8 @@ return;
 requests[index].status = "已作廢";
 
 renderTables();
+
+setTimeout(loadCloudRequests,1200);
 }
 
 
@@ -927,6 +937,8 @@ reviewer:currentUser
 });
 
 renderTables();
+
+setTimeout(loadCloudRequests,1200);
 }
 
 function reject(index){
@@ -941,6 +953,8 @@ reviewer:currentUser
 });
 
 renderTables();
+
+setTimeout(loadCloudRequests,1200);
 }
 
 function renderTables(){
@@ -1254,6 +1268,103 @@ renderStock();
 
 
 <div id="printArea"></div>
+
+
+<!-- Firebase Firestore -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+updateDoc,
+doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCzvPwTbxc_Lg7peKRgP0zUrlmI6kkE0b4",
+  authDomain: "seal-management-68465.firebaseapp.com",
+  projectId: "seal-management-68465",
+  storageBucket: "seal-management-68465.firebasestorage.app",
+  messagingSenderId: "933578260928",
+  appId: "1:933578260928:web:4c5f41252fd786e1bf0825",
+  measurementId: "G-7RKPNF7BK9"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+window.db = db;
+window.fbCollection = collection;
+window.fbAddDoc = addDoc;
+window.fbGetDocs = getDocs;
+window.fbUpdateDoc = updateDoc;
+window.fbDoc = doc;
+
+console.log("✅ Firebase 已連線");
+
+
+
+// ===== Firebase Helper =====
+
+window.saveRequestCloud = async function saveRequestCloud(data){
+
+try{
+
+if(!window.db) return;
+
+const ref = await window.fbAddDoc(
+window.fbCollection(window.db,"requests"),
+data
+);
+
+console.log("已同步雲端", ref.id);
+
+}catch(e){
+
+console.error("Firebase同步失敗",e);
+
+}
+}
+
+window.loadCloudRequests = async function loadCloudRequests(){
+
+try{
+
+if(!window.db) return;
+
+const snapshot = await window.fbGetDocs(
+window.fbCollection(window.db,"requests")
+);
+
+requests = [];
+
+snapshot.forEach(docSnap=>{
+
+requests.push({
+firebaseId:docSnap.id,
+...docSnap.data()
+});
+
+});
+
+renderTables();
+
+}catch(e){
+
+console.error(e);
+
+}
+}
+
+// ===== Firebase Helper End =====
+
+
+</script>
 
 </body>
 </html>
