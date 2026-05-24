@@ -593,8 +593,8 @@ items.forEach(item=>{
 stockItems.push({
 name:item,
 category:cat,
-price:Math.floor(Math.random()*250)+20,
-qty:Math.floor(Math.random()*120)+20,
+price:30,
+qty:50,
 safe:10,
 hidden:false,
 image:"https://images.unsplash.com/photo-1586282391129-76a6df230234?q=80&w=800&auto=format&fit=crop"
@@ -634,6 +634,8 @@ document.getElementById("showUser").innerText = currentUser;
 
 document.getElementById("loginPage").style.display = "none";
 document.getElementById("system").style.display = "block";
+
+sessionStorage.setItem("systemOpened","true");
 
 renderTables();
 
@@ -1363,6 +1365,79 @@ console.error(e);
 
 // ===== Firebase Helper End =====
 
+
+
+// ===== 自動登入 =====
+
+window.addEventListener("DOMContentLoaded",()=>{
+
+const savedUser = localStorage.getItem("stationeryUser");
+const savedName = localStorage.getItem("stationeryName");
+const savedDept = localStorage.getItem("stationeryDept");
+
+if(savedUser && savedName && savedDept){
+
+document.getElementById("name").value = savedName;
+document.getElementById("dept").value = savedDept;
+
+setTimeout(()=>{
+
+window.login();
+
+},500);
+
+}
+
+});
+
+// ===== 自動登入 END =====
+
+</script>
+
+
+<script>
+
+// ===== 強化版自動登入修正 =====
+
+(function(){
+
+const savedUser = localStorage.getItem("stationeryUser");
+const savedName = localStorage.getItem("stationeryName");
+const savedDept = localStorage.getItem("stationeryDept");
+
+if(savedUser && savedName && savedDept){
+
+window.addEventListener("load", function(){
+
+// 直接恢復畫面
+document.getElementById("loginPage").style.display = "none";
+document.getElementById("system").style.display = "block";
+
+document.getElementById("showUser").innerText = savedUser;
+
+// 回填登入欄位
+document.getElementById("name").value = savedName;
+document.getElementById("dept").value = savedDept;
+
+// 管理者恢復
+if(savedName === "蔡雨鑫" && savedDept === "行政部"){
+
+document.querySelectorAll(".admin-only").forEach(el=>{
+
+el.classList.remove("hidden");
+el.style.display = "flex";
+
+});
+
+}
+
+});
+
+}
+
+})();
+
+// ===== 強化版自動登入修正 END =====
 
 </script>
 
