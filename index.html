@@ -1084,7 +1084,7 @@ el.style.display === "block"
 : "block";
 }
 
-function cancelRequest(index){
+async function cancelRequest(index){
 
 if(requests[index].status !== "待審核"){
 alert("已核准或已退回，無法抽單");
@@ -1093,9 +1093,24 @@ return;
 
 requests[index].status = "已作廢";
 
+// Firebase 同步
+if(requests[index].firebaseId && window.db){
+
+await window.fbUpdateDoc(
+window.fbDoc(window.db,"requests",requests[index].firebaseId),
+{
+status:"已作廢"
+}
+);
+
+}
+
 renderTables();
-if(typeof renderReportTable==='function'){renderReportTable();}
+
+if(typeof renderReportTable==='function'){
 renderReportTable();
+}
+
 }
 
 
