@@ -1113,12 +1113,16 @@ status:"已核准"
 }
 
 // 審核紀錄
-reviewHistory.unshift({
+const reviewData = {
 datetime:new Date().toLocaleString(),
 applicant:req.applicant,
 result:"已核准",
 reviewer:currentUser
-});
+};
+
+reviewHistory.unshift(reviewData);
+
+await saveReviewHistory(reviewData);
 
 renderTables();
 
@@ -1793,6 +1797,76 @@ wb,
 }
 
 </script>
+
+
+
+<!-- ========================= -->
+<!-- ReviewHistory 雲端永久保存 -->
+<!-- ========================= -->
+
+<script>
+
+async function saveReviewHistory(data){
+
+try{
+
+if(!window.db) return;
+
+await window.fbAddDoc(
+window.fbCollection(window.db,"reviewHistory"),
+data
+);
+
+}catch(e){
+
+console.error("審核紀錄同步失敗",e);
+
+}
+
+}
+
+async function loadCloudReviewHistory(){
+
+try{
+
+if(!window.db) return;
+
+const snapshot = await window.fbGetDocs(
+window.fbCollection(window.db,"reviewHistory")
+);
+
+reviewHistory = [];
+
+snapshot.forEach(docSnap=>{
+
+reviewHistory.push(docSnap.data());
+
+});
+
+renderTables();
+
+}catch(e){
+
+console.error("讀取審核紀錄失敗",e);
+
+}
+
+}
+
+window.addEventListener("load",()=>{
+
+setTimeout(()=>{
+
+if(typeof loadCloudReviewHistory === "function"){
+loadCloudReviewHistory();
+}
+
+},1500);
+
+});
+
+</script>
+
 
 </body>
 </html>
