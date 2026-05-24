@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 固定價格與固定庫存正式版 -->
 <title>企業級文具請領系統_最終權限完整版</title>
 
 <style>
@@ -321,6 +322,9 @@ font-family:"DFKai-SB","標楷體";
 登入系統
 </button>
 
+
+
+
 </div>
 
 </div>
@@ -359,6 +363,13 @@ font-family:"DFKai-SB","標楷體";
 <button class="admin-only hidden" onclick="showPage('reviewHistory')">
 <span class="icon">🗂️</span>
 <span class="menu-text">審核紀錄</span>
+</button>
+
+
+
+<button class="admin-only hidden" onclick="showPage('reportPage')">
+<span class="icon">🧾</span>
+<span class="menu-text">報表清冊</span>
 </button>
 
 </div>
@@ -504,6 +515,44 @@ font-family:"DFKai-SB","標楷體";
 
 </div>
 
+
+<!-- report -->
+<div class="page" id="reportPage">
+
+<div class="card">
+
+<h2>🧾 報表清冊 / 簽收單列印</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>選取</th>
+<th>申請時間</th>
+<th>申請人</th>
+<th>金額</th>
+<th>狀態</th>
+</tr>
+</thead>
+
+<tbody id="reportTable"></tbody>
+
+</table>
+
+<br>
+
+<button class="action-btn green"
+onclick="printSelectedReceipts()">
+
+下載勾選簽收單Excel
+
+</button>
+
+</div>
+
+</div>
+
+
 <!-- record -->
 <div class="page" id="record">
 
@@ -584,7 +633,131 @@ const categories = {
 "辦公用品類":["剪刀","膠帶台","訂書機","迴紋針","美工刀"]
 };
 
-let stockItems = [];
+
+let stockItems = [
+
+{
+name:"藍色原子筆",
+category:"筆類",
+price:20,
+qty:50,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"紅色原子筆",
+category:"筆類",
+price:20,
+qty:50,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"自動鉛筆",
+category:"筆類",
+price:35,
+qty:40,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"螢光筆",
+category:"筆類",
+price:45,
+qty:35,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"黃色便利貼",
+category:"便條紙類",
+price:50,
+qty:60,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"彩色便利貼",
+category:"便條紙類",
+price:65,
+qty:45,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"A4影印紙",
+category:"紙張類",
+price:120,
+qty:40,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"A3影印紙",
+category:"紙張類",
+price:180,
+qty:20,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"L夾",
+category:"資料夾類",
+price:25,
+qty:70,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"資料簿",
+category:"資料夾類",
+price:90,
+qty:25,
+safe:10,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"剪刀",
+category:"辦公用品類",
+price:120,
+qty:15,
+safe:5,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+},
+
+{
+name:"訂書機",
+category:"辦公用品類",
+price:180,
+qty:10,
+safe:5,
+hidden:false,
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+}
+
+];
+
 
 Object.entries(categories).forEach(([cat,items])=>{
 
@@ -604,45 +777,12 @@ image:"https://images.unsplash.com/photo-1586282391129-76a6df230234?q=80&w=800&a
 
 });
 
-function login(){
 
-const name = document.getElementById("loginName").value;
-const dept = document.getElementById("loginDept").value;
-
-if(!name || !dept){
-alert("請輸入姓名與部門");
-return;
-}
-
-currentUser = dept + " / " + name;
-
-if(name === "蔡雨鑫" && dept === "行政部"){
-
-isAdmin = true;
-
-document.querySelectorAll(".admin-only").forEach(el=>{
-el.style.display = "flex";
-el.classList.remove("hidden");
-});
-
-}else{
-
-isAdmin = false;
-}
-
-document.getElementById("showUser").innerText = currentUser;
-
-document.getElementById("loginPage").style.display = "none";
-document.getElementById("system").style.display = "block";
-
-sessionStorage.setItem("systemOpened","true");
-
-renderTables();
-
-setTimeout(loadCloudRequests,1200);
-}
 
 function logout(){
+
+localStorage.removeItem("stationeryName");
+localStorage.removeItem("stationeryDept");
 
 location.reload();
 }
@@ -821,6 +961,23 @@ return;
 
 const total = cart.reduce((sum,i)=>sum+i.subtotal,0);
 
+requests.unshift({
+applicant:currentUser,
+items:[...cart],
+total,
+status:"待審核",
+datetime:new Date().toLocaleString()
+});
+
+cart=[];
+
+renderCart();
+renderTables();
+
+try{
+
+if(window.db){
+
 const newRequest = {
 applicant:currentUser,
 items:[...cart],
@@ -829,16 +986,23 @@ status:"待審核",
 datetime:new Date().toLocaleString()
 };
 
-requests.unshift(newRequest);
 
-saveRequestCloud(newRequest);
+const docRef = await window.fbAddDoc(
+window.fbCollection(window.db,"requests"),
+newRequest
+);
 
-cart=[];
+// 回寫 firebaseId 到本地 requests
+requests[0].firebaseId = docRef.id;
 
-renderCart();
-renderTables();
 
-setTimeout(loadCloudRequests,1200);
+}
+
+}catch(e){
+
+console.error("Firestore同步失敗",e);
+
+}
 
 alert("送出成功");
 
@@ -865,8 +1029,6 @@ return;
 requests[index].status = "已作廢";
 
 renderTables();
-
-setTimeout(loadCloudRequests,1200);
 }
 
 
@@ -927,39 +1089,89 @@ wb,
 }
 
 
-function approve(index){
 
-requests[index].status = "已核准";
+
+
+async function approve(index){
+
+try{
+
+const req = requests[index];
+
+if(!req) return;
+
+req.status = "已核准";
+
+if(req.firebaseId && window.db){
+
+await window.fbUpdateDoc(
+window.fbDoc(window.db,"requests",req.firebaseId),
+{
+status:"已核准"
+}
+);
+
+}
 
 reviewHistory.unshift({
 datetime:new Date().toLocaleString(),
-applicant:requests[index].applicant,
+applicant:req.applicant,
 result:"已核准",
 reviewer:currentUser
 });
 
 renderTables();
 
-setTimeout(loadCloudRequests,1200);
+}catch(e){
+
+console.error(e);
+alert("核准失敗");
+
 }
 
-function reject(index){
+}
 
-requests[index].status = "退回";
+async function reject(index){
+
+try{
+
+const req = requests[index];
+
+if(!req) return;
+
+req.status = "已退回";
+
+if(req.firebaseId && window.db){
+
+await window.fbUpdateDoc(
+window.fbDoc(window.db,"requests",req.firebaseId),
+{
+status:"已退回"
+}
+);
+
+}
 
 reviewHistory.unshift({
 datetime:new Date().toLocaleString(),
-applicant:requests[index].applicant,
+applicant:req.applicant,
 result:"已退回",
 reviewer:currentUser
 });
 
 renderTables();
 
-setTimeout(loadCloudRequests,1200);
+}catch(e){
+
+console.error(e);
+alert("退回失敗");
+
+}
+
 }
 
 function renderTables(){
+
 
 const review = document.getElementById("reviewTable");
 const record = document.getElementById("recordTable");
@@ -975,7 +1187,7 @@ const items = r.items.map(i=>
 `• ${i.item} x ${i.qty}<br>`
 ).join("");
 
-if(isAdmin){
+if(isAdmin && r.status==="待審核"){
 
 review.innerHTML += `
 <tr>
@@ -1087,7 +1299,67 @@ history.innerHTML += `
 </tr>
 `;
 });
+
+
+const historyTable = document.getElementById("reviewHistoryTable");
+
+if(historyTable){
+
+historyTable.innerHTML = "";
+
+reviewHistory.forEach(r=>{
+
+historyTable.innerHTML += `
+<tr>
+
+<td>${r.datetime}</td>
+<td>${r.applicant}</td>
+<td>${r.result}</td>
+<td>${r.reviewer}</td>
+
+</tr>
+`;
+
+});
+
 }
+
+}
+
+
+const reportTable = document.getElementById("reportTable");
+
+if(reportTable){
+
+reportTable.innerHTML = "";
+
+requests.forEach((r,index)=>{
+
+if(r.status==="已核准"){
+
+reportTable.innerHTML += `
+<tr>
+
+<td>
+<input type="checkbox"
+class="report-check"
+value="${index}">
+</td>
+
+<td>${r.datetime}</td>
+<td>${r.applicant}</td>
+<td>NT$ ${r.total}</td>
+<td>${r.status}</td>
+
+</tr>
+`;
+
+}
+
+});
+
+}
+
 
 function renderStock(){
 
@@ -1272,18 +1544,17 @@ renderStock();
 <div id="printArea"></div>
 
 
-<!-- Firebase Firestore -->
+<!-- Firebase 正式雲端同步 -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import {
-getFirestore,
-collection,
-addDoc,
-getDocs,
-updateDoc,
-doc
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1297,7 +1568,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getFirestore(app);
 
 window.db = db;
@@ -1307,33 +1577,52 @@ window.fbGetDocs = getDocs;
 window.fbUpdateDoc = updateDoc;
 window.fbDoc = doc;
 
-console.log("✅ Firebase 已連線");
+console.log("Firebase 已正式連線");
+
+</script>
 
 
+<script>
 
-// ===== Firebase Helper =====
+// ===== 登入持久化 =====
 
-window.saveRequestCloud = async function saveRequestCloud(data){
+window.addEventListener("load",()=>{
 
-try{
+const savedName = localStorage.getItem("stationeryName");
+const savedDept = localStorage.getItem("stationeryDept");
 
-if(!window.db) return;
+if(savedName && savedDept){
 
-const ref = await window.fbAddDoc(
-window.fbCollection(window.db,"requests"),
-data
-);
+const nameEl = document.getElementById("loginName");
+const deptEl = document.getElementById("loginDept");
 
-console.log("已同步雲端", ref.id);
+if(nameEl && deptEl){
 
-}catch(e){
+nameEl.value = savedName;
+deptEl.value = savedDept;
 
-console.error("Firebase同步失敗",e);
+setTimeout(()=>{
+
+if(typeof login === "function"){
+login();
+}
+
+},300);
 
 }
+
 }
 
-window.loadCloudRequests = async function loadCloudRequests(){
+});
+
+// ===== 登入持久化 END =====
+
+</script>
+
+
+<script>
+
+async function loadCloudRequests(){
 
 try{
 
@@ -1361,83 +1650,172 @@ renderTables();
 console.error(e);
 
 }
+
 }
 
-// ===== Firebase Helper End =====
-
-
-
-// ===== 自動登入 =====
-
-window.addEventListener("DOMContentLoaded",()=>{
-
-const savedUser = localStorage.getItem("stationeryUser");
-const savedName = localStorage.getItem("stationeryName");
-const savedDept = localStorage.getItem("stationeryDept");
-
-if(savedUser && savedName && savedDept){
-
-document.getElementById("name").value = savedName;
-document.getElementById("dept").value = savedDept;
+window.addEventListener("load",()=>{
 
 setTimeout(()=>{
 
-window.login();
-
-},500);
-
+if(typeof loadCloudRequests === "function"){
+loadCloudRequests();
 }
 
-});
+},1200);
 
-// ===== 自動登入 END =====
+});
 
 </script>
 
 
 <script>
 
-// ===== 強化版自動登入修正 =====
+function login(){
 
-(function(){
+const nameEl = document.getElementById("loginName") || document.getElementById("name");
+const deptEl = document.getElementById("loginDept") || document.getElementById("dept");
 
-const savedUser = localStorage.getItem("stationeryUser");
-const savedName = localStorage.getItem("stationeryName");
-const savedDept = localStorage.getItem("stationeryDept");
+if(!nameEl || !deptEl){
+alert("登入欄位不存在");
+return;
+}
 
-if(savedUser && savedName && savedDept){
+const name = nameEl.value.trim();
+const dept = deptEl.value.trim();
 
-window.addEventListener("load", function(){
+if(!name || !dept){
+alert("請輸入姓名與部門");
+return;
+}
 
-// 直接恢復畫面
+currentUser = dept + " / " + name;
+
+localStorage.setItem("stationeryName", name);
+localStorage.setItem("stationeryDept", dept);
+
+// 顯示系統
 document.getElementById("loginPage").style.display = "none";
 document.getElementById("system").style.display = "block";
 
-document.getElementById("showUser").innerText = savedUser;
+// 使用者名稱
+const showUser = document.getElementById("showUser");
 
-// 回填登入欄位
-document.getElementById("name").value = savedName;
-document.getElementById("dept").value = savedDept;
+if(showUser){
+showUser.innerText = currentUser;
+}
 
-// 管理者恢復
-if(savedName === "蔡雨鑫" && savedDept === "行政部"){
+// 管理者
+if(name === "蔡雨鑫" && dept === "行政部"){
+
+isAdmin = true;
 
 document.querySelectorAll(".admin-only").forEach(el=>{
-
 el.classList.remove("hidden");
 el.style.display = "flex";
-
 });
+
+}
+
+// 只呼叫原本既有初始化
+if(typeof renderCategories === "function") renderCategories();
+if(typeof renderProducts === "function") renderProducts();
+if(typeof renderStock === "function") renderStock();
+if(typeof renderTables === "function") renderTables();
+
+if(typeof loadCloudRequests === "function"){
+loadCloudRequests();
+}
+
+}
+
+// 自動登入
+window.addEventListener("load",()=>{
+
+const savedName = localStorage.getItem("stationeryName");
+const savedDept = localStorage.getItem("stationeryDept");
+
+const nameEl = document.getElementById("loginName") || document.getElementById("name");
+const deptEl = document.getElementById("loginDept") || document.getElementById("dept");
+
+if(savedName && savedDept && nameEl && deptEl){
+
+nameEl.value = savedName;
+deptEl.value = savedDept;
+
+setTimeout(()=>{
+login();
+},300);
 
 }
 
 });
 
+</script>
+
+
+<script>
+
+function printSelectedReceipts(){
+
+const checked = document.querySelectorAll(".report-check:checked");
+
+if(checked.length===0){
+
+alert("請先勾選訂單");
+return;
+
 }
 
-})();
+const wb = XLSX.utils.book_new();
 
-// ===== 強化版自動登入修正 END =====
+checked.forEach((c,idx)=>{
+
+const r = requests[c.value];
+
+const wsData = [];
+
+wsData.push(["文具簽領單"]);
+wsData.push([]);
+wsData.push(["申請人", r.applicant]);
+wsData.push(["申請日期", r.datetime]);
+wsData.push(["狀態", r.status]);
+wsData.push([]);
+
+wsData.push(["品項","數量","金額"]);
+
+r.items.forEach(i=>{
+
+wsData.push([
+i.item,
+i.qty,
+i.subtotal
+]);
+
+});
+
+wsData.push([]);
+wsData.push(["總金額","",r.total]);
+wsData.push([]);
+wsData.push(["申請人簽名："]);
+wsData.push([]);
+wsData.push(["管理者簽名："]);
+
+const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+XLSX.utils.book_append_sheet(
+wb,
+ws,
+`簽收單_${idx+1}`
+);
+
+});
+
+XLSX.writeFile(
+wb,
+"文具簽收單_批次匯出.xlsx"
+);
+
+}
 
 </script>
 
