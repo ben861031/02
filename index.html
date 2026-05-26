@@ -2528,30 +2528,24 @@ console.log("Firebase 已正式連線");
 
 window.addEventListener("load",()=>{
 
-const savedName = localStorage.getItem("stationeryName");
-const savedDept = localStorage.getItem("stationeryDept");
+setTimeout(async ()=>{
 
-if(savedName && savedDept){
-
-const nameEl = document.getElementById("loginName");
-const deptEl = document.getElementById("loginDept");
-
-if(nameEl && deptEl){
-
-nameEl.value = savedName;
-deptEl.value = savedDept;
-
-setTimeout(()=>{
-
-if(typeof login === "function"){
-login();
+if(typeof loadDepartments === "function"){
+await loadDepartments();
 }
 
-},300);
-
+if(typeof loadCloudStockItems === "function"){
+await loadCloudStockItems();
 }
 
+if(typeof loadCloudCategories === "function"){
+await loadCloudCategories();
 }
+
+renderDepartments();
+renderDepartmentTable();
+
+},1500);
 
 });
 
@@ -2598,13 +2592,24 @@ console.error(e);
 
 window.addEventListener("load",()=>{
 
-setTimeout(()=>{
+setTimeout(async ()=>{
 
-if(typeof loadCloudRequests === "function"){
-loadCloudRequests();
+if(typeof loadDepartments === "function"){
+await loadDepartments();
 }
 
-},1200);
+if(typeof loadCloudStockItems === "function"){
+await loadCloudStockItems();
+}
+
+if(typeof loadCloudCategories === "function"){
+await loadCloudCategories();
+}
+
+renderDepartments();
+renderDepartmentTable();
+
+},1500);
 
 });
 
@@ -2679,22 +2684,24 @@ loadCloudRequests();
 // 自動登入
 window.addEventListener("load",()=>{
 
-const savedName = localStorage.getItem("stationeryName");
-const savedDept = localStorage.getItem("stationeryDept");
+setTimeout(async ()=>{
 
-const nameEl = document.getElementById("loginName") || document.getElementById("name");
-const deptEl = document.getElementById("loginDept") || document.getElementById("dept");
-
-if(savedName && savedDept && nameEl && deptEl){
-
-nameEl.value = savedName;
-deptEl.value = savedDept;
-
-setTimeout(()=>{
-login();
-},300);
-
+if(typeof loadDepartments === "function"){
+await loadDepartments();
 }
+
+if(typeof loadCloudStockItems === "function"){
+await loadCloudStockItems();
+}
+
+if(typeof loadCloudCategories === "function"){
+await loadCloudCategories();
+}
+
+renderDepartments();
+renderDepartmentTable();
+
+},1500);
 
 });
 
@@ -2827,11 +2834,22 @@ console.error("讀取審核紀錄失敗",e);
 
 window.addEventListener("load",()=>{
 
-setTimeout(()=>{
+setTimeout(async ()=>{
 
-if(typeof loadCloudReviewHistory === "function"){
-loadCloudReviewHistory();
+if(typeof loadDepartments === "function"){
+await loadDepartments();
 }
+
+if(typeof loadCloudStockItems === "function"){
+await loadCloudStockItems();
+}
+
+if(typeof loadCloudCategories === "function"){
+await loadCloudCategories();
+}
+
+renderDepartments();
+renderDepartmentTable();
 
 },1500);
 
