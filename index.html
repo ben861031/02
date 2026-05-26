@@ -686,6 +686,7 @@ onclick="addDepartment()">
 <tr>
 <th>排序</th>
 <th>部門名稱</th>
+<th>部門管總</th>
 <th>狀態</th>
 <th>操作</th>
 </tr>
@@ -776,15 +777,37 @@ let historyPageSize = 10;
 let filteredReviewHistory = [];
 
 // 部門管理
-let departments = [
-{name:"行政部",sort:1,enabled:true},
-{name:"監理部",sort:2,enabled:true},
-{name:"研資部",sort:3,enabled:true},
-{name:"財務部",sort:4,enabled:true}
+
+// 計畫編號主檔
+let projects = [
+{
+department:"行政部",
+projectCode:"9603Q-03"
+},
+{
+department:"研資部",
+projectCode:"9606Q-06"
+}
+];
+
+// 管理者主檔
+let admins = [
+{
+name:"蔡雨鑫",
+department:"行政部"
+}
 ];
 
 
-const categories = {
+let departments = [
+{name:"行政部",deptCode:"9603Q-03",sort:1,enabled:true},
+{name:"監理部",deptCode:"9604Q-04",sort:2,enabled:true},
+{name:"研資部",deptCode:"9606Q-06",sort:3,enabled:true},
+{name:"財務部",deptCode:"9602Q-02",sort:4,enabled:true}
+];
+
+
+let categories = {
 "筆類":["藍色原子筆","紅色原子筆","自動鉛筆","螢光筆","油性簽字筆"],
 "便條紙類":["黃色便利貼","彩色便利貼","索引標籤","便條紙本","透明標籤貼"],
 "紙張類":["A4影印紙","A3影印紙","牛皮紙","色紙","標籤貼紙"],
@@ -802,7 +825,8 @@ price:20,
 qty:50,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
@@ -812,7 +836,8 @@ price:20,
 qty:50,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
@@ -822,7 +847,8 @@ price:35,
 qty:40,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
@@ -832,7 +858,8 @@ price:45,
 qty:35,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
@@ -842,7 +869,8 @@ price:50,
 qty:60,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
@@ -852,7 +880,8 @@ price:65,
 qty:45,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
@@ -862,7 +891,8 @@ price:120,
 qty:40,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
@@ -872,7 +902,8 @@ price:180,
 qty:20,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
@@ -882,7 +913,8 @@ price:25,
 qty:70,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
@@ -892,27 +924,32 @@ price:90,
 qty:25,
 safe:10,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
 name:"剪刀",
 category:"辦公用品類",
+type:"borrow",
 price:120,
 qty:15,
 safe:5,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 },
 
 {
 name:"訂書機",
 category:"辦公用品類",
+type:"borrow",
 price:180,
 qty:10,
 safe:5,
 hidden:false,
-image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+image:"https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+type:"normal"
 }
 
 ];
@@ -929,7 +966,8 @@ price:30,
 qty:50,
 safe:10,
 hidden:false,
-image:"https://images.unsplash.com/photo-1586282391129-76a6df230234?q=80&w=800&auto=format&fit=crop"
+image:"https://images.unsplash.com/photo-1586282391129-76a6df230234?q=80&w=800&auto=format&fit=crop",
+type:"normal"
 });
 
 });
@@ -958,6 +996,146 @@ p.classList.remove("active");
 });
 
 document.getElementById(id).classList.add("active");
+}
+
+
+
+
+async function loadCloudStockItems(){
+
+try{
+
+if(!window.db) return;
+
+const snapshot = await window.fbGetDocs(
+window.fbCollection(window.db,"stockItems")
+);
+
+const temp = [];
+
+snapshot.forEach(docSnap=>{
+
+temp.push({
+firebaseId:docSnap.id,
+...docSnap.data()
+});
+
+});
+
+if(temp.length > 0){
+
+stockItems = temp;
+
+renderCategories();
+renderProducts();
+renderStock();
+
+}
+
+}catch(e){
+
+console.error("讀取庫存主檔失敗",e);
+
+}
+
+}
+
+async function loadCloudCategories(){
+
+try{
+
+if(!window.db) return;
+
+const snapshot = await window.fbGetDocs(
+window.fbCollection(window.db,"categories")
+);
+
+const temp = {};
+
+snapshot.forEach(docSnap=>{
+
+const d = docSnap.data();
+
+temp[d.name] = d.items || [];
+
+});
+
+if(Object.keys(temp).length > 0){
+
+categories = temp;
+
+renderCategories();
+
+}
+
+}catch(e){
+
+console.error("讀取分類失敗",e);
+
+}
+
+}
+
+
+async function loadDepartments(){
+
+try{
+
+if(!window.db) return;
+
+const snapshot = await window.fbGetDocs(
+window.fbCollection(window.db,"departments")
+);
+
+departments = [];
+
+snapshot.forEach(docSnap=>{
+
+departments.push({
+firebaseId:docSnap.id,
+...docSnap.data()
+});
+
+});
+
+renderDepartments();
+renderDepartmentTable();
+
+setTimeout(()=>{
+
+if(typeof loadDepartments === "function"){
+loadDepartments();
+}
+
+if(typeof loadCloudStockItems === "function"){
+loadCloudStockItems();
+}
+
+if(typeof loadCloudCategories === "function"){
+loadCloudCategories();
+}
+
+},1000);
+
+}catch(e){
+
+console.error("讀取部門失敗",e);
+
+}
+
+}
+
+async function saveDepartment(dep){
+
+if(!window.db) return;
+
+const docRef = await window.fbAddDoc(
+window.fbCollection(window.db,"departments"),
+dep
+);
+
+return docRef.id;
+
 }
 
 
@@ -1019,6 +1197,15 @@ onchange="updateDepartmentName(${index},this.value)">
 </td>
 
 <td>
+
+<input type="text"
+value="${dep.deptCode || ''}"
+placeholder="例如：9603Q-03"
+onchange="updateDepartmentCode(${index},this.value)">
+
+</td>
+
+<td>
 ${dep.enabled ? "🟢 啟用":"🔴 停用"}
 </td>
 
@@ -1047,7 +1234,7 @@ onclick="deleteDepartment(${index})">
 
 }
 
-function addDepartment(){
+async function addDepartment(){
 
 const input = document.getElementById("newDepartment");
 
@@ -1060,11 +1247,22 @@ return;
 
 }
 
-departments.push({
+const dep = {
 name,
+deptCode:"",
 sort:departments.length+1,
 enabled:true
-});
+};
+
+departments.push(dep);
+
+if(window.db){
+
+const id = await saveDepartment(dep);
+
+departments[departments.length-1].firebaseId = id;
+
+}
 
 input.value = "";
 
@@ -1074,39 +1272,103 @@ renderDepartmentTable();
 }
 
 
-function updateDepartmentName(index,val){
+async function updateDepartmentName(index,val){
 
 departments[index].name = val;
 
+if(departments[index].firebaseId && window.db){
+
+await window.fbUpdateDoc(
+window.fbDoc(window.db,"departments",departments[index].firebaseId),
+{
+name:val
+}
+);
+
+}
+
 renderDepartments();
 renderDepartmentTable();
 
 }
 
-function updateDepartmentSort(index,val){
+
+async function updateDepartmentCode(index,val){
+
+departments[index].deptCode = val;
+
+if(departments[index].firebaseId && window.db){
+
+await window.fbUpdateDoc(
+window.fbDoc(window.db,"departments",departments[index].firebaseId),
+{
+deptCode:val
+}
+);
+
+}
+
+renderDepartmentTable();
+
+}
+
+
+async function updateDepartmentSort(index,val){
 
 departments[index].sort = Number(val);
 
+if(departments[index].firebaseId && window.db){
+
+await window.fbUpdateDoc(
+window.fbDoc(window.db,"departments",departments[index].firebaseId),
+{
+sort:Number(val)
+}
+);
+
+}
+
 renderDepartments();
 renderDepartmentTable();
 
 }
 
 
-function toggleDepartment(index){
+async function toggleDepartment(index){
 
 departments[index].enabled =
 !departments[index].enabled;
 
+if(departments[index].firebaseId && window.db){
+
+await window.fbUpdateDoc(
+window.fbDoc(window.db,"departments",departments[index].firebaseId),
+{
+enabled:departments[index].enabled
+}
+);
+
+}
+
 renderDepartments();
 renderDepartmentTable();
 
 }
 
-function deleteDepartment(index){
+async function deleteDepartment(index){
 
 if(!confirm("確定刪除部門？"))
 return;
+
+const dep = departments[index];
+
+if(dep.firebaseId && window.db){
+
+await window.fbDeleteDoc(
+window.fbDoc(window.db,"departments",dep.firebaseId)
+);
+
+}
 
 departments.splice(index,1);
 
@@ -1212,7 +1474,7 @@ NT$ ${item.price}
 可用庫存：${availableQty}
 </p>
 
-${["剪刀","訂書機"].includes(item.name)
+${item.type==="borrow"
 ? '<p style="color:#dc2626;font-weight:bold;">🔐 借用類（需歸還）</p>'
 : ''
 }
@@ -1330,7 +1592,7 @@ const requestItems = cart.map(i=>({
 ...i,
 
 borrowReturned:
-["剪刀","訂書機"].includes(i.item)
+stockItems.find(s=>s.name===i.item)?.type==="borrow"
 ? false
 : null,
 
@@ -1954,7 +2216,9 @@ requests.forEach((r,reqIndex)=>{
 
 (r.items || []).forEach((item,itemIndex)=>{
 
-if(!["剪刀","訂書機"].includes(item.item)){
+const stock = stockItems.find(s=>s.name===item.item);
+
+if(!stock || stock.type!=="borrow"){
 return;
 }
 
@@ -2224,6 +2488,7 @@ import {
   addDoc,
   getDocs,
   updateDoc,
+  deleteDoc,
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -2246,6 +2511,7 @@ window.fbAddDoc = addDoc;
 window.fbGetDocs = getDocs;
 window.fbUpdateDoc = updateDoc;
 window.fbDoc = doc;
+window.fbDeleteDoc = deleteDoc;
 
 console.log("Firebase 已正式連線");
 
@@ -2378,7 +2644,9 @@ showUser.innerText = currentUser;
 }
 
 // 管理者
-if(name === "蔡雨鑫" && dept === "行政部"){
+if(admins.some(a=>
+a.name===name && a.department===dept
+)){
 
 isAdmin = true;
 
