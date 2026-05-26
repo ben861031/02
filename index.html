@@ -348,7 +348,7 @@ reportTable.innerHTML += `
 
 <input type="text" id="loginName" placeholder="姓名">
 
-<input type="text" id="loginDept" placeholder="部門">
+<select id="loginDept" style="width:100%;padding:12px;margin-bottom:15px;border:1px solid #ccc;border-radius:10px;"></select>
 
 <button class="login-btn" onclick="login()">
 登入系統
@@ -402,6 +402,16 @@ reportTable.innerHTML += `
 <button class="admin-only hidden" onclick="showPage('reportPage')">
 <span class="icon">🧾</span>
 <span class="menu-text">報表清冊</span>
+</button>
+
+<button class="admin-only hidden" onclick="showPage('borrowAssets')">
+<span class="icon">🔐</span>
+<span class="menu-text">借用資產管理</span>
+</button>
+
+<button class="admin-only hidden" onclick="showPage('departmentPage')">
+<span class="icon">🏢</span>
+<span class="menu-text">部門管理</span>
 </button>
 
 </div>
@@ -608,6 +618,87 @@ onclick="printSelectedReceipts()">
 </div>
 
 
+
+<!-- borrow assets -->
+<div class="page" id="borrowAssets">
+
+<div class="card">
+
+<h2>🔐 借用資產管理</h2>
+
+<div style="margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;">
+
+<input type="text"
+id="borrowSearch"
+placeholder="搜尋借用人 / 品項"
+style="max-width:320px;"
+oninput="renderBorrowAssets()">
+
+</div>
+
+<table>
+
+<thead>
+<tr>
+<th>申請時間</th>
+<th>申請人</th>
+<th>品項</th>
+<th>數量</th>
+<th>狀態</th>
+<th>操作</th>
+</tr>
+</thead>
+
+<tbody id="borrowAssetsTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- department -->
+<div class="page" id="departmentPage">
+
+<div class="card">
+
+<h2>🏢 部門管理</h2>
+
+<div style="display:flex;gap:10px;margin-bottom:20px;">
+
+<input type="text"
+id="newDepartment"
+placeholder="輸入部門名稱">
+
+<button class="action-btn blue"
+onclick="addDepartment()">
+
+新增部門
+
+</button>
+
+</div>
+
+<table>
+
+<thead>
+<tr>
+<th>排序</th>
+<th>部門名稱</th>
+<th>狀態</th>
+<th>操作</th>
+</tr>
+</thead>
+
+<tbody id="departmentTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
 <!-- record -->
 <div class="page" id="record">
 
@@ -683,6 +774,14 @@ let reviewHistory = [];
 let historyCurrentPage = 1;
 let historyPageSize = 10;
 let filteredReviewHistory = [];
+
+// 部門管理
+let departments = [
+{name:"行政部",sort:1,enabled:true},
+{name:"監理部",sort:2,enabled:true},
+{name:"研資部",sort:3,enabled:true},
+{name:"財務部",sort:4,enabled:true}
+];
 
 
 const categories = {
@@ -861,6 +960,162 @@ p.classList.remove("active");
 document.getElementById(id).classList.add("active");
 }
 
+
+function renderDepartments(){
+
+const select = document.getElementById("loginDept");
+
+if(!select) return;
+
+select.innerHTML = `
+<option value="">請選擇部門</option>
+`;
+
+departments
+.filter(d=>d.enabled)
+.sort((a,b)=>a.sort-b.sort)
+.forEach(dep=>{
+
+select.innerHTML += `
+<option value="${dep.name}">
+${dep.name}
+</option>
+`;
+
+});
+
+}
+
+function renderDepartmentTable(){
+
+const table = document.getElementById("departmentTable");
+
+if(!table) return;
+
+table.innerHTML = "";
+
+departments
+.sort((a,b)=>a.sort-b.sort)
+.forEach((dep,index)=>{
+
+table.innerHTML += `
+<tr>
+
+<td>
+
+<input type="number"
+value="${dep.sort}"
+style="width:80px;"
+onchange="updateDepartmentSort(${index},this.value)">
+
+</td>
+
+<td>
+
+<input type="text"
+value="${dep.name}"
+onchange="updateDepartmentName(${index},this.value)">
+
+</td>
+
+<td>
+${dep.enabled ? "🟢 啟用":"🔴 停用"}
+</td>
+
+<td>
+
+<button class="action-btn orange"
+onclick="toggleDepartment(${index})">
+
+${dep.enabled ? "停用":"啟用"}
+
+</button>
+
+<button class="action-btn red"
+onclick="deleteDepartment(${index})">
+
+刪除
+
+</button>
+
+</td>
+
+</tr>
+`;
+
+});
+
+}
+
+function addDepartment(){
+
+const input = document.getElementById("newDepartment");
+
+const name = input.value.trim();
+
+if(!name){
+
+alert("請輸入部門名稱");
+return;
+
+}
+
+departments.push({
+name,
+sort:departments.length+1,
+enabled:true
+});
+
+input.value = "";
+
+renderDepartments();
+renderDepartmentTable();
+
+}
+
+
+function updateDepartmentName(index,val){
+
+departments[index].name = val;
+
+renderDepartments();
+renderDepartmentTable();
+
+}
+
+function updateDepartmentSort(index,val){
+
+departments[index].sort = Number(val);
+
+renderDepartments();
+renderDepartmentTable();
+
+}
+
+
+function toggleDepartment(index){
+
+departments[index].enabled =
+!departments[index].enabled;
+
+renderDepartments();
+renderDepartmentTable();
+
+}
+
+function deleteDepartment(index){
+
+if(!confirm("確定刪除部門？"))
+return;
+
+departments.splice(index,1);
+
+renderDepartments();
+renderDepartmentTable();
+
+}
+
+
 function renderCategories(){
 
 const area = document.getElementById("categoryArea");
@@ -891,6 +1146,34 @@ renderCategories();
 renderProducts();
 }
 
+
+function getPendingQty(itemName){
+
+let pending = 0;
+
+requests.forEach(r=>{
+
+if(r.status === "待審核"){
+
+(r.items || []).forEach(i=>{
+
+if(i.item === itemName){
+
+pending += Number(i.qty || 0);
+
+}
+
+});
+
+}
+
+});
+
+return pending;
+
+}
+
+
 function renderProducts(){
 
 const area = document.getElementById("productArea");
@@ -907,6 +1190,9 @@ filtered.forEach(item=>{
 
 const index = stockItems.indexOf(item);
 
+const pendingQty = getPendingQty(item.name);
+const availableQty = item.qty - pendingQty;
+
 area.innerHTML += `
 <div class="product-card">
 
@@ -920,7 +1206,16 @@ area.innerHTML += `
 NT$ ${item.price}
 </div>
 
-<p>庫存：${item.qty}</p>
+<p>總庫存：${item.qty}</p>
+<p style="color:#dc2626;">待審核占用：${pendingQty}</p>
+<p style="font-weight:bold;color:#16a34a;">
+可用庫存：${availableQty}
+</p>
+
+${["剪刀","訂書機"].includes(item.name)
+? '<p style="color:#dc2626;font-weight:bold;">🔐 借用類（需歸還）</p>'
+: ''
+}
 
 <input type="number"
 id="qty_${index}"
@@ -946,9 +1241,17 @@ function addToCart(index){
 
 const qty = Number(document.getElementById(`qty_${index}`).value);
 
-if(stockItems[index].qty < qty){
-alert("庫存不足");
+const pendingQty = getPendingQty(stockItems[index].name);
+
+const availableQty =
+stockItems[index].qty - pendingQty;
+
+if(availableQty < qty){
+
+alert(`可用庫存不足，目前剩餘 ${availableQty}`);
+
 return;
+
 }
 
 cart.push({
@@ -1022,7 +1325,19 @@ return;
 const total = cart.reduce((sum,i)=>sum+i.subtotal,0);
 
 // 先保留購物車資料
-const requestItems = [...cart];
+const requestItems = cart.map(i=>({
+
+...i,
+
+borrowReturned:
+["剪刀","訂書機"].includes(i.item)
+? false
+: null,
+
+returnDate:null,
+returnedBy:""
+
+}));
 
 requests.unshift({
 applicant:currentUser,
@@ -1036,6 +1351,7 @@ cart=[];
 
 renderCart();
 renderTables();
+renderBorrowAssets();
 if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 
@@ -1182,6 +1498,26 @@ if(!req) return;
 
 req.status = "已核准";
 
+// 核准後正式扣庫存
+(req.items || []).forEach(i=>{
+
+const stock = stockItems.find(s=>s.name===i.item);
+
+if(stock){
+
+stock.qty -= Number(i.qty || 0);
+
+if(stock.qty < 0){
+stock.qty = 0;
+}
+
+}
+
+});
+
+renderProducts();
+renderStock();
+
 // Firebase 同步
 if(req.firebaseId && window.db){
 
@@ -1239,6 +1575,7 @@ reviewHistory.unshift(reviewData);
 saveReviewHistory(reviewData);
 
 renderTables();
+renderBorrowAssets();
 if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 }
@@ -1600,6 +1937,98 @@ renderReviewHistoryTable();
 
 
 
+
+function renderBorrowAssets(){
+
+const table = document.getElementById("borrowAssetsTable");
+
+if(!table) return;
+
+table.innerHTML = "";
+
+const keyword =
+(document.getElementById("borrowSearch")?.value || "")
+.toLowerCase();
+
+requests.forEach((r,reqIndex)=>{
+
+(r.items || []).forEach((item,itemIndex)=>{
+
+if(!["剪刀","訂書機"].includes(item.item)){
+return;
+}
+
+if(
+keyword &&
+!(
+(r.applicant || "").toLowerCase().includes(keyword) ||
+(item.item || "").toLowerCase().includes(keyword)
+)
+){
+return;
+}
+
+table.innerHTML += `
+<tr>
+
+<td>${r.datetime}</td>
+
+<td>${r.applicant}</td>
+
+<td>${item.item}</td>
+
+<td>${item.qty}</td>
+
+<td>
+
+${item.borrowReturned
+? "✅ 已歸還"
+: "🔐 借用中"}
+
+</td>
+
+<td>
+
+${!item.borrowReturned ? `
+<button class="action-btn green"
+onclick="returnBorrowItem(${reqIndex},${itemIndex})">
+
+確認歸還
+
+</button>
+`
+: "-"}
+
+</td>
+
+</tr>
+`;
+
+});
+
+});
+
+}
+
+function returnBorrowItem(reqIndex,itemIndex){
+
+requests[reqIndex].items[itemIndex].borrowReturned = true;
+
+requests[reqIndex].items[itemIndex].returnDate =
+new Date().toLocaleString();
+
+requests[reqIndex].items[itemIndex].returnedBy =
+currentUser;
+
+renderBorrowAssets();
+
+alert("已完成單一品項歸還");
+
+}
+
+window.returnBorrowItem = returnBorrowItem;
+
+
 function renderStock(){
 
 const table = document.getElementById("stockTable");
@@ -1772,10 +2201,12 @@ renderProducts();
 renderStock();
 }
 
+renderDepartments();
 renderCategories();
 renderProducts();
 renderCart();
 renderStock();
+renderDepartmentTable();
 
 </script>
 
@@ -1883,6 +2314,7 @@ firebaseId:docSnap.id,
 });
 
 renderTables();
+renderBorrowAssets();
 if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 
@@ -1962,6 +2394,7 @@ if(typeof renderCategories === "function") renderCategories();
 if(typeof renderProducts === "function") renderProducts();
 if(typeof renderStock === "function") renderStock();
 if(typeof renderTables === "function") renderTables();
+renderBorrowAssets();
 if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 
@@ -2108,6 +2541,7 @@ reviewHistory.push(docSnap.data());
 });
 
 renderTables();
+renderBorrowAssets();
 if(typeof renderReportTable==='function'){renderReportTable();}
 renderReportTable();
 
