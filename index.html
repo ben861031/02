@@ -624,7 +624,27 @@ onclick="printSelectedReceipts()">
 
 <div class="card">
 
+
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+
 <h2>🔐 借用資產管理</h2>
+
+<div style="display:flex;gap:10px;">
+
+<button class="action-btn blue"
+onclick="toggleBorrowTab('active')">
+借用中
+</button>
+
+<button class="action-btn gray"
+onclick="toggleBorrowTab('history')">
+歸還紀錄
+</button>
+
+</div>
+
+</div>
+
 
 <div style="margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;">
 
@@ -635,6 +655,9 @@ style="max-width:320px;"
 oninput="renderBorrowAssets()">
 
 </div>
+
+
+<div id="borrowActiveWrap">
 
 <table>
 
@@ -652,6 +675,29 @@ oninput="renderBorrowAssets()">
 <tbody id="borrowAssetsTable"></tbody>
 
 </table>
+
+</div>
+
+<div id="borrowHistoryWrap" style="display:none;">
+
+<table>
+
+<thead>
+<tr>
+<th>歸還時間</th>
+<th>申請人</th>
+<th>品項</th>
+<th>數量</th>
+<th>歸還人</th>
+</tr>
+</thead>
+
+<tbody id="borrowHistoryTable"></tbody>
+
+</table>
+
+</div>
+
 
 </div>
 
@@ -2210,6 +2256,64 @@ renderReviewHistoryTable();
 
 
 
+
+
+function toggleBorrowTab(type){
+
+const activeWrap = document.getElementById("borrowActiveWrap");
+const historyWrap = document.getElementById("borrowHistoryWrap");
+
+if(!activeWrap || !historyWrap) return;
+
+if(type==="history"){
+
+activeWrap.style.display = "none";
+historyWrap.style.display = "block";
+
+renderBorrowHistory();
+
+}else{
+
+activeWrap.style.display = "block";
+historyWrap.style.display = "none";
+
+}
+
+}
+
+function renderBorrowHistory(){
+
+const table = document.getElementById("borrowHistoryTable");
+
+if(!table) return;
+
+table.innerHTML = "";
+
+requests.forEach(r=>{
+
+(r.items || []).forEach(item=>{
+
+if(item.borrowReturned){
+
+table.innerHTML += `
+<tr>
+<td>${item.returnDate || "-"}</td>
+<td>${r.applicant}</td>
+<td>${item.item}</td>
+<td>${item.qty}</td>
+<td>${item.returnedBy || "-"}</td>
+</tr>
+`;
+
+}
+
+});
+
+});
+
+}
+
+
 function renderBorrowAssets(){
 
 const table = document.getElementById("borrowAssetsTable");
@@ -2229,6 +2333,10 @@ requests.forEach((r,reqIndex)=>{
 const stock = stockItems.find(s=>s.name===item.item);
 
 if(!stock || stock.type!=="borrow"){
+return;
+}
+
+if(item.borrowReturned){
 return;
 }
 
@@ -2284,7 +2392,7 @@ onclick="returnBorrowItem(${reqIndex},${itemIndex})">
 
 }
 
-function returnBorrowItem(reqIndex,itemIndex){
+async function returnBorrowItem(reqIndex,itemIndex){
 
 requests[reqIndex].items[itemIndex].borrowReturned = true;
 
@@ -2294,7 +2402,28 @@ new Date().toLocaleString();
 requests[reqIndex].items[itemIndex].returnedBy =
 currentUser;
 
+// Firebase同步
+const req = requests[reqIndex];
+
+if(req.firebaseId && window.db){
+
+await window.fbUpdateDoc(
+window.fbDoc(
+window.db,
+"stationery_requests",
+req.firebaseId
+),
+{
+items:req.items
+}
+);
+
+}
+
 renderBorrowAssets();
+
+renderBorrowAssets();
+renderBorrowHistory();
 
 alert("已完成單一品項歸還");
 
