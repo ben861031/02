@@ -672,7 +672,7 @@ id="newDepartment"
 placeholder="輸入部門名稱">
 
 <button class="action-btn blue"
-onclick="if(typeof addDepartment===`function`){addDepartment()}">
+onclick="addDepartment()">
 
 新增部門
 
@@ -800,14 +800,13 @@ department:"行政部"
 
 
 let departments = [
-
 {
 name:"行政部",
 deptCode:"9603Q-03",
 sort:1,
-enabled:true
+enabled:true,
+isLocalFallback:true
 }
-
 ];
 
 
@@ -1088,40 +1087,33 @@ try{
 if(!window.db) return;
 
 const snapshot = await window.fbGetDocs(
-window.fbCollection(window.db,"stationery_departments")
+window.fbCollection(
+window.db,
+"stationery_departments"
+)
 );
 
-departments = [];
+const tempDepartments = [];
 
 snapshot.forEach(docSnap=>{
 
-departments.push({
+tempDepartments.push({
 firebaseId:docSnap.id,
 ...docSnap.data()
 });
 
 });
 
+// Firebase 有資料才真正覆蓋本地救援資料
+if(tempDepartments.length > 0){
+departments = tempDepartments;
+}
+
 renderDepartments();
+
 if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
 }
-
-setTimeout(()=>{
-
-if(typeof loadDepartments === "function"){
-loadDepartments();
-}
-
-if(typeof loadCloudStockItems === "function"){
-loadCloudStockItems();
-}
-
-if(typeof loadCloudCategories === "function"){
-loadCloudCategories();
-}
-
-},1000);
 
 }catch(e){
 
@@ -1130,6 +1122,32 @@ console.error("讀取部門失敗",e);
 }
 
 }
+
+window.addEventListener("load", async ()=>{
+
+await new Promise(resolve=>setTimeout(resolve,1500));
+
+if(typeof loadDepartments === "function"){
+await loadDepartments();
+}
+
+if(typeof loadCloudStockItems === "function"){
+await loadCloudStockItems();
+}
+
+if(typeof loadCloudCategories === "function"){
+await loadCloudCategories();
+}
+
+if(typeof renderDepartments === "function"){
+renderDepartments();
+}
+
+if(typeof renderDepartmentTable === "function"){
+renderDepartmentTable();
+}
+
+});
 
 async function saveDepartment(dep){
 
@@ -1155,9 +1173,9 @@ select.innerHTML = `
 <option value="">請選擇部門</option>
 `;
 
-departments
-.filter(d=>d.enabled)
-.sort((a,b)=>a.sort-b.sort)
+(departments || [])
+.filter(d=>d.enabled !== false)
+.sort((a,b)=>(a.sort||999)-(b.sort||999))
 .forEach(dep=>{
 
 select.innerHTML += `
@@ -1178,7 +1196,7 @@ if(!table) return;
 
 table.innerHTML = "";
 
-(departments || [])
+departments
 .sort((a,b)=>a.sort-b.sort)
 .forEach((dep,index)=>{
 
@@ -1205,7 +1223,7 @@ onchange="updateDepartmentName(${index},this.value)">
 <td>
 
 <input type="text"
-value="${dep?.deptCode || ''}"
+value="${dep.deptCode || ''}"
 placeholder="例如：9603Q-03"
 onchange="updateDepartmentCode(${index},this.value)">
 
@@ -1262,8 +1280,6 @@ enabled:true
 
 departments.push(dep);
 
-try{
-
 if(window.db){
 
 const id = await saveDepartment(dep);
@@ -1272,18 +1288,10 @@ departments[departments.length-1].firebaseId = id;
 
 }
 
-}catch(e){
-
-console.error("新增部門失敗",e);
-
-}
-
 input.value = "";
 
 renderDepartments();
-if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
-}
 
 }
 
@@ -1304,9 +1312,7 @@ name:val
 }
 
 renderDepartments();
-if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
-}
 
 }
 
@@ -1326,9 +1332,7 @@ deptCode:val
 
 }
 
-if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
-}
 
 }
 
@@ -1349,9 +1353,7 @@ sort:Number(val)
 }
 
 renderDepartments();
-if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
-}
 
 }
 
@@ -1373,9 +1375,7 @@ enabled:departments[index].enabled
 }
 
 renderDepartments();
-if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
-}
 
 }
 
@@ -1397,9 +1397,7 @@ window.fbDoc(window.db,"stationery_departments",dep.firebaseId)
 departments.splice(index,1);
 
 renderDepartments();
-if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
-}
 
 }
 
@@ -2496,9 +2494,7 @@ renderCategories();
 renderProducts();
 renderCart();
 renderStock();
-if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
-}
 
 </script>
 
@@ -2650,9 +2646,11 @@ return;
 const name = nameEl.value.trim();
 const dept = deptEl.value.trim();
 
-if(!name || !dept){
-alert("請輸入姓名與部門");
+if(!name){
+
+alert("請輸入姓名");
 return;
+
 }
 
 currentUser = dept + " / " + name;
@@ -2672,9 +2670,12 @@ showUser.innerText = currentUser;
 }
 
 // 管理者
-if(admins.some(a=>
+if(
+name === "蔡雨鑫" ||
+admins.some(a=>
 a.name===name && a.department===dept
-)){
+)
+){
 
 isAdmin = true;
 
