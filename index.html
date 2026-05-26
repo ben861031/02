@@ -532,7 +532,7 @@ reportTable.innerHTML += `
 </div>
 
 <!-- review history -->
-<div class="page" id="reviewHistory">
+<div class="page" id="stationery_reviewHistory">
 
 <div class="card">
 
@@ -672,7 +672,7 @@ id="newDepartment"
 placeholder="輸入部門名稱">
 
 <button class="action-btn blue"
-onclick="addDepartment()">
+onclick="if(typeof addDepartment===`function`){addDepartment()}">
 
 新增部門
 
@@ -990,7 +990,7 @@ location.reload();
 
 function showPage(id){
 
-if(!isAdmin && ["stock","review","reviewHistory"].includes(id)){
+if(!isAdmin && ["stock","review","stationery_reviewHistory"].includes(id)){
 alert("您沒有權限");
 return;
 }
@@ -1012,7 +1012,7 @@ try{
 if(!window.db) return;
 
 const snapshot = await window.fbGetDocs(
-window.fbCollection(window.db,"stockItems")
+window.fbCollection(window.db,"stationery_stockItems")
 );
 
 const temp = [];
@@ -1051,7 +1051,7 @@ try{
 if(!window.db) return;
 
 const snapshot = await window.fbGetDocs(
-window.fbCollection(window.db,"categories")
+window.fbCollection(window.db,"stationery_categories")
 );
 
 const temp = {};
@@ -1088,7 +1088,7 @@ try{
 if(!window.db) return;
 
 const snapshot = await window.fbGetDocs(
-window.fbCollection(window.db,"departments")
+window.fbCollection(window.db,"stationery_departments")
 );
 
 departments = [];
@@ -1103,7 +1103,9 @@ firebaseId:docSnap.id,
 });
 
 renderDepartments();
+if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
+}
 
 setTimeout(()=>{
 
@@ -1134,7 +1136,7 @@ async function saveDepartment(dep){
 if(!window.db) return;
 
 const docRef = await window.fbAddDoc(
-window.fbCollection(window.db,"departments"),
+window.fbCollection(window.db,"stationery_departments"),
 dep
 );
 
@@ -1176,7 +1178,7 @@ if(!table) return;
 
 table.innerHTML = "";
 
-departments
+(departments || [])
 .sort((a,b)=>a.sort-b.sort)
 .forEach((dep,index)=>{
 
@@ -1203,7 +1205,7 @@ onchange="updateDepartmentName(${index},this.value)">
 <td>
 
 <input type="text"
-value="${dep.deptCode || ''}"
+value="${dep?.deptCode || ''}"
 placeholder="例如：9603Q-03"
 onchange="updateDepartmentCode(${index},this.value)">
 
@@ -1260,6 +1262,8 @@ enabled:true
 
 departments.push(dep);
 
+try{
+
 if(window.db){
 
 const id = await saveDepartment(dep);
@@ -1268,10 +1272,18 @@ departments[departments.length-1].firebaseId = id;
 
 }
 
+}catch(e){
+
+console.error("新增部門失敗",e);
+
+}
+
 input.value = "";
 
 renderDepartments();
+if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
+}
 
 }
 
@@ -1283,7 +1295,7 @@ departments[index].name = val;
 if(departments[index].firebaseId && window.db){
 
 await window.fbUpdateDoc(
-window.fbDoc(window.db,"departments",departments[index].firebaseId),
+window.fbDoc(window.db,"stationery_departments",departments[index].firebaseId),
 {
 name:val
 }
@@ -1292,7 +1304,9 @@ name:val
 }
 
 renderDepartments();
+if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
+}
 
 }
 
@@ -1304,7 +1318,7 @@ departments[index].deptCode = val;
 if(departments[index].firebaseId && window.db){
 
 await window.fbUpdateDoc(
-window.fbDoc(window.db,"departments",departments[index].firebaseId),
+window.fbDoc(window.db,"stationery_departments",departments[index].firebaseId),
 {
 deptCode:val
 }
@@ -1312,7 +1326,9 @@ deptCode:val
 
 }
 
+if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
+}
 
 }
 
@@ -1324,7 +1340,7 @@ departments[index].sort = Number(val);
 if(departments[index].firebaseId && window.db){
 
 await window.fbUpdateDoc(
-window.fbDoc(window.db,"departments",departments[index].firebaseId),
+window.fbDoc(window.db,"stationery_departments",departments[index].firebaseId),
 {
 sort:Number(val)
 }
@@ -1333,7 +1349,9 @@ sort:Number(val)
 }
 
 renderDepartments();
+if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
+}
 
 }
 
@@ -1346,7 +1364,7 @@ departments[index].enabled =
 if(departments[index].firebaseId && window.db){
 
 await window.fbUpdateDoc(
-window.fbDoc(window.db,"departments",departments[index].firebaseId),
+window.fbDoc(window.db,"stationery_departments",departments[index].firebaseId),
 {
 enabled:departments[index].enabled
 }
@@ -1355,7 +1373,9 @@ enabled:departments[index].enabled
 }
 
 renderDepartments();
+if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
+}
 
 }
 
@@ -1369,7 +1389,7 @@ const dep = departments[index];
 if(dep.firebaseId && window.db){
 
 await window.fbDeleteDoc(
-window.fbDoc(window.db,"departments",dep.firebaseId)
+window.fbDoc(window.db,"stationery_departments",dep.firebaseId)
 );
 
 }
@@ -1377,7 +1397,9 @@ window.fbDoc(window.db,"departments",dep.firebaseId)
 departments.splice(index,1);
 
 renderDepartments();
+if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
+}
 
 }
 
@@ -1635,7 +1657,7 @@ datetime:new Date().toLocaleString()
 
 
 const docRef = await window.fbAddDoc(
-window.fbCollection(window.db,"requests"),
+window.fbCollection(window.db,"stationery_requests"),
 newRequest
 );
 
@@ -1679,7 +1701,7 @@ requests[index].status = "已作廢";
 if(requests[index].firebaseId && window.db){
 
 await window.fbUpdateDoc(
-window.fbDoc(window.db,"requests",requests[index].firebaseId),
+window.fbDoc(window.db,"stationery_requests",requests[index].firebaseId),
 {
 status:"已作廢"
 }
@@ -1788,7 +1810,7 @@ renderStock();
 if(req.firebaseId && window.db){
 
 await window.fbUpdateDoc(
-window.fbDoc(window.db,"requests",req.firebaseId),
+window.fbDoc(window.db,"stationery_requests",req.firebaseId),
 {
 status:"已核准"
 }
@@ -2474,7 +2496,9 @@ renderCategories();
 renderProducts();
 renderCart();
 renderStock();
+if(typeof renderDepartmentTable === "function"){
 renderDepartmentTable();
+}
 
 </script>
 
@@ -2528,24 +2552,30 @@ console.log("Firebase 已正式連線");
 
 window.addEventListener("load",()=>{
 
-setTimeout(async ()=>{
+const savedName = localStorage.getItem("stationeryName");
+const savedDept = localStorage.getItem("stationeryDept");
 
-if(typeof loadDepartments === "function"){
-await loadDepartments();
+if(savedName && savedDept){
+
+const nameEl = document.getElementById("loginName");
+const deptEl = document.getElementById("loginDept");
+
+if(nameEl && deptEl){
+
+nameEl.value = savedName;
+deptEl.value = savedDept;
+
+setTimeout(()=>{
+
+if(typeof login === "function"){
+login();
 }
 
-if(typeof loadCloudStockItems === "function"){
-await loadCloudStockItems();
+},300);
+
 }
 
-if(typeof loadCloudCategories === "function"){
-await loadCloudCategories();
 }
-
-renderDepartments();
-renderDepartmentTable();
-
-},1500);
 
 });
 
@@ -2563,7 +2593,7 @@ try{
 if(!window.db) return;
 
 const snapshot = await window.fbGetDocs(
-window.fbCollection(window.db,"requests")
+window.fbCollection(window.db,"stationery_requests")
 );
 
 requests = [];
@@ -2592,24 +2622,13 @@ console.error(e);
 
 window.addEventListener("load",()=>{
 
-setTimeout(async ()=>{
+setTimeout(()=>{
 
-if(typeof loadDepartments === "function"){
-await loadDepartments();
+if(typeof loadCloudRequests === "function"){
+loadCloudRequests();
 }
 
-if(typeof loadCloudStockItems === "function"){
-await loadCloudStockItems();
-}
-
-if(typeof loadCloudCategories === "function"){
-await loadCloudCategories();
-}
-
-renderDepartments();
-renderDepartmentTable();
-
-},1500);
+},1200);
 
 });
 
@@ -2684,24 +2703,22 @@ loadCloudRequests();
 // 自動登入
 window.addEventListener("load",()=>{
 
-setTimeout(async ()=>{
+const savedName = localStorage.getItem("stationeryName");
+const savedDept = localStorage.getItem("stationeryDept");
 
-if(typeof loadDepartments === "function"){
-await loadDepartments();
+const nameEl = document.getElementById("loginName") || document.getElementById("name");
+const deptEl = document.getElementById("loginDept") || document.getElementById("dept");
+
+if(savedName && savedDept && nameEl && deptEl){
+
+nameEl.value = savedName;
+deptEl.value = savedDept;
+
+setTimeout(()=>{
+login();
+},300);
+
 }
-
-if(typeof loadCloudStockItems === "function"){
-await loadCloudStockItems();
-}
-
-if(typeof loadCloudCategories === "function"){
-await loadCloudCategories();
-}
-
-renderDepartments();
-renderDepartmentTable();
-
-},1500);
 
 });
 
@@ -2789,7 +2806,7 @@ try{
 if(!window.db) return;
 
 await window.fbAddDoc(
-window.fbCollection(window.db,"reviewHistory"),
+window.fbCollection(window.db,"stationery_reviewHistory"),
 data
 );
 
@@ -2808,7 +2825,7 @@ try{
 if(!window.db) return;
 
 const snapshot = await window.fbGetDocs(
-window.fbCollection(window.db,"reviewHistory")
+window.fbCollection(window.db,"stationery_reviewHistory")
 );
 
 reviewHistory = [];
@@ -2834,22 +2851,11 @@ console.error("讀取審核紀錄失敗",e);
 
 window.addEventListener("load",()=>{
 
-setTimeout(async ()=>{
+setTimeout(()=>{
 
-if(typeof loadDepartments === "function"){
-await loadDepartments();
+if(typeof loadCloudReviewHistory === "function"){
+loadCloudReviewHistory();
 }
-
-if(typeof loadCloudStockItems === "function"){
-await loadCloudStockItems();
-}
-
-if(typeof loadCloudCategories === "function"){
-await loadCloudCategories();
-}
-
-renderDepartments();
-renderDepartmentTable();
 
 },1500);
 
